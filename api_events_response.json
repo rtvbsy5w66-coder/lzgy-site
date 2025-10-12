@@ -1,0 +1,50 @@
+[
+  {
+    "id": "mock-event-1",
+    "title": "Lakossági fórum - Környezetvédelem",
+    "description": "Beszélgetés a zöld energia programról és a városi környezetvédelmi kezdeményezésekről. Megvitatjuk a napelemes program kiterjesztését és a hulladékgazdálkodás fejlesztését.",
+    "location": "XIII. kerületi Közösségi Ház",
+    "startDate": "2025-09-11T13:36:41.687Z",
+    "endDate": "2025-09-11T15:36:41.687Z",
+    "status": "UPCOMING",
+    "imageUrl": null,
+    "createdAt": "2025-09-04T13:36:41.687Z",
+    "updatedAt": "2025-09-04T13:36:41.687Z"
+  },
+  {
+    "id": "mock-event-2",
+    "title": "Közösségi kertészkedés",
+    "description": "A kerületi közösségi kert fejlesztése és gondozása. Ültessünk együtt újabb növényeket és tanuljunk a fenntartható gazdálkodásról!",
+    "location": "XIII. kerületi Közösségi Kert",
+    "startDate": "2025-09-18T13:36:41.687Z",
+    "endDate": "2025-09-18T17:36:41.687Z",
+    "status": "UPCOMING",
+    "imageUrl": null,
+    "createdAt": "2025-09-04T13:36:41.687Z",
+    "updatedAt": "2025-09-04T13:36:41.687Z"
+  },
+  {
+    "id": "mock-event-3",
+    "title": "Oktatási kerekasztal",
+    "description": "Beszélgetés a digitális oktatás fejlesztéséről és a modern oktatási eszközökről. Hogyan készíthetjük fel gyermekeinket a jövő kihívásaira?",
+    "location": "XIII. kerületi Művelődési Központ",
+    "startDate": "2025-09-25T13:36:41.687Z",
+    "endDate": "2025-09-25T15:36:41.687Z",
+    "status": "UPCOMING",
+    "imageUrl": null,
+    "createdAt": "2025-09-04T13:36:41.687Z",
+    "updatedAt": "2025-09-04T13:36:41.687Z"
+  },
+  {
+    "id": "mock-event-4",
+    "title": "Közlekedési fórum",
+    "description": "Megbeszéljük a kerékpárút-fejlesztési terveket és a tömegközlekedés javítási lehetőségeit.",
+    "location": "XIII. kerületi Polgármesteri Hivatal",
+    "startDate": "2025-10-02T13:36:41.687Z",
+    "endDate": "2025-10-02T15:06:41.687Z",
+    "status": "UPCOMING",
+    "imageUrl": null,
+    "createdAt": "2025-09-04T13:36:41.687Z",
+    "updatedAt": "2025-09-04T13:36:41.687Z"
+  }
+]

@@ -1,0 +1,36 @@
+# OWASP ZAP Security Scan Rules
+# Format: IGNORE|WARN|FAIL	CONFIDENCE	URL_REGEX	PARAMETER	CWE	WASCID	DESCRIPTION
+
+# Authentication and Session Management
+FAIL	HIGH	.*	.*	.*	.*	Missing Anti-clickjacking Header
+FAIL	HIGH	.*	.*	.*	.*	Missing Anti-CSRF Tokens
+FAIL	HIGH	.*	.*	.*	.*	Cookie No HttpOnly Flag
+FAIL	HIGH	.*	.*	.*	.*	Cookie Without Secure Flag
+FAIL	HIGH	.*	.*	.*	.*	Weak Authentication Method
+
+# Input Validation
+FAIL	HIGH	.*	.*	.*	.*	SQL Injection
+FAIL	HIGH	.*	.*	.*	.*	Cross Site Scripting (Reflected)
+FAIL	HIGH	.*	.*	.*	.*	Cross Site Scripting (Stored)
+FAIL	HIGH	.*	.*	.*	.*	Path Traversal
+
+# Information Disclosure
+FAIL	MEDIUM	.*	.*	.*	.*	Information Disclosure - Suspicious Comments
+FAIL	MEDIUM	.*	.*	.*	.*	Application Error Disclosure
+FAIL	HIGH	.*	.*	.*	.*	Directory Browsing
+
+# Security Headers
+FAIL	MEDIUM	.*	.*	.*	.*	Missing Anti-clickjacking Header
+FAIL	MEDIUM	.*	.*	.*	.*	Content Security Policy (CSP) Header Not Set
+FAIL	LOW	.*	.*	.*	.*	X-Content-Type-Options Header Missing
+FAIL	LOW	.*	.*	.*	.*	Strict-Transport-Security Header Not Set
+
+# Development/Testing Endpoints (ignore in dev)
+IGNORE	.*	.*/api/csrf-token	.*	.*	.*	CSRF Token Endpoint (Expected)
+IGNORE	.*	.*/api/health.*	.*	.*	.*	Health Check Endpoints
+WARN	.*	.*/admin/.*	.*	.*	.*	Admin Endpoints (Should be protected)
+
+# API Specific Rules
+FAIL	HIGH	.*/api/.*	.*	.*	.*	Injection (Command Injection)
+FAIL	HIGH	.*/api/.*	.*	.*	.*	XML External Entity Attack
+WARN	MEDIUM	.*/api/.*	.*	.*	.*	Absence of Anti-CSRF Tokens

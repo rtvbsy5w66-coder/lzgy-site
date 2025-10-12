@@ -1,0 +1,47 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Create simple auth service
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Create auth server
+RUN cat > server.js << 'EOF'
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+
+// Validate API token
+app.get('/validate', (req, res) => {
+  const authHeader = req.headers.authorization;
+  const expectedToken = process.env.AI_SERVER_TOKEN || 'test-token-123';
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Missing authorization header' });
+  }
+  
+  const token = authHeader.substring(7);
+  
+  if (token !== expectedToken) {
+    return res.status(403).json({ error: 'Invalid token' });
+  }
+  
+  res.status(200).json({ valid: true });
+});
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', service: 'ai-auth' });
+});
+
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Auth service running on port ${PORT}`);
+});
+EOF
+
+EXPOSE 3001
+
+CMD ["node", "server.js"]

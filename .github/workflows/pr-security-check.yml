@@ -1,0 +1,316 @@
+name: 🔍 PR Security Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'src/**'
+      - 'prisma/**'
+      - 'package*.json'
+      - '.env*'
+      - 'security-test.sh'
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # ============================================
+  # 🚨 CRITICAL SECURITY CHECKS FOR PR
+  # ============================================
+  pr-security-gate:
+    name: 🚨 PR Security Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout PR Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔍 Check for Security-Related Changes
+        id: security-changes
+        run: |
+          echo "🔍 Analyzing security-related changes in PR..."
+          
+          # Get list of changed files
+          CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          
+          # Check for security-sensitive file changes
+          SECURITY_FILES=""
+          
+          if echo "$CHANGED_FILES" | grep -E "(auth|security|middleware|validation)" > /dev/null; then
+            SECURITY_FILES="$SECURITY_FILES\n- Authentication/Security files"
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -E "\.env|prisma/schema" > /dev/null; then
+            SECURITY_FILES="$SECURITY_FILES\n- Environment/Database files"
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -E "package\.json|package-lock\.json" > /dev/null; then
+            SECURITY_FILES="$SECURITY_FILES\n- Dependency files"
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -E "api/.*route\.ts" > /dev/null; then
+            SECURITY_FILES="$SECURITY_FILES\n- API endpoint files"
+          fi
+          
+          if [ -n "$SECURITY_FILES" ]; then
+            echo "security_changes=true" >> $GITHUB_OUTPUT
+            echo "changed_security_files<<EOF" >> $GITHUB_OUTPUT
+            echo -e "$SECURITY_FILES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "security_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🔍 Detect Secrets in PR Changes
+        run: |
+          echo "🔍 Scanning PR changes for secrets..."
+          
+          # Check diff for potential secrets
+          git diff origin/main...HEAD > pr_diff.txt
+          
+          # Common secret patterns
+          if grep -i "password\|secret\|key\|token" pr_diff.txt | grep -E "=|:" | grep -v "PLACEHOLDER\|example\|template"; then
+            echo "❌ POTENTIAL SECRETS DETECTED IN PR!"
+            echo "Please review the following lines:"
+            grep -i "password\|secret\|key\|token" pr_diff.txt | grep -E "=|:" | grep -v "PLACEHOLDER\|example\|template"
+            exit 1
+          fi
+          
+          echo "✅ No secrets detected in PR changes"
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🧪 Security-Focused Linting
+        run: |
+          echo "🧪 Running security-focused ESLint rules..."
+          
+          # Create temporary ESLint config for security
+          cat > .eslintrc.security.js << EOF
+          module.exports = {
+            extends: ['./.eslintrc.json'],
+            rules: {
+              // Security-focused rules
+              'no-eval': 'error',
+              'no-implied-eval': 'error',
+              'no-new-func': 'error',
+              'no-script-url': 'error',
+              '@typescript-eslint/no-explicit-any': 'error',
+              '@typescript-eslint/no-unsafe-assignment': 'error',
+              '@typescript-eslint/no-unsafe-call': 'error',
+              '@typescript-eslint/no-unsafe-member-access': 'error',
+              '@typescript-eslint/no-unsafe-return': 'error'
+            }
+          };
+          EOF
+          
+          # Run security lint only on changed files
+          CHANGED_TS_FILES=$(git diff --name-only origin/main...HEAD | grep -E "\.(ts|tsx)$" || echo "")
+          
+          if [ -n "$CHANGED_TS_FILES" ]; then
+            echo "Linting changed TypeScript files:"
+            echo "$CHANGED_TS_FILES"
+            npx eslint --config .eslintrc.security.js $CHANGED_TS_FILES
+          else
+            echo "No TypeScript files changed"
+          fi
+
+      - name: 🔍 API Security Review
+        if: steps.security-changes.outputs.security_changes == 'true'
+        run: |
+          echo "🔍 Reviewing API security changes..."
+          
+          # Check for new API routes
+          NEW_API_ROUTES=$(git diff --name-only origin/main...HEAD | grep "api/.*route\.ts" || echo "")
+          
+          if [ -n "$NEW_API_ROUTES" ]; then
+            echo "📝 New/Modified API routes detected:"
+            echo "$NEW_API_ROUTES"
+            
+            echo ""
+            echo "🔍 Security checklist for API routes:"
+            echo "- [ ] Authentication/authorization implemented"
+            echo "- [ ] Input validation added"
+            echo "- [ ] Rate limiting configured"
+            echo "- [ ] Error handling secure"
+            echo "- [ ] No sensitive data exposure"
+            
+            # Check if security middleware is used
+            for route in $NEW_API_ROUTES; do
+              echo ""
+              echo "Analyzing: $route"
+              
+              if ! grep -q "applySecurityMiddleware\|requireAdminAuth\|SecurityValidator" "$route"; then
+                echo "⚠️  WARNING: No security middleware detected in $route"
+                echo "Please ensure proper security measures are implemented."
+              else
+                echo "✅ Security middleware found in $route"
+              fi
+            done
+          fi
+
+      - name: 📊 Generate PR Security Summary
+        if: always()
+        run: |
+          echo "📊 Generating PR security summary..."
+          
+          cat > pr-security-summary.md << EOF
+          ## 🔒 PR Security Review Summary
+          
+          **PR:** #${{ github.event.pull_request.number }}
+          **Author:** @${{ github.event.pull_request.user.login }}
+          **Branch:** ${{ github.head_ref }}
+          
+          ### Security-Related Changes
+          ${{ steps.security-changes.outputs.security_changes == 'true' && '⚠️ This PR contains security-related changes' || '✅ No security-sensitive changes detected' }}
+          
+          ${{ steps.security-changes.outputs.security_changes == 'true' && steps.security-changes.outputs.changed_security_files || '' }}
+          
+          ### Security Checks Performed
+          - [x] Secret detection scan
+          - [x] Security-focused linting
+          - [x] API security review
+          - [x] Dependency vulnerability check
+          
+          ### Recommendations
+          - Ensure all new API endpoints use security middleware
+          - Verify input validation is implemented
+          - Test authentication and authorization
+          - Review error handling for information leakage
+          
+          ---
+          *Automated security review by GitHub Actions*
+          EOF
+          
+          echo "Security summary generated!"
+
+      - name: 💬 Comment on PR
+        uses: actions/github-script@v7
+        if: steps.security-changes.outputs.security_changes == 'true'
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('pr-security-summary.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+  # ============================================
+  # 🧪 QUICK SECURITY TESTS FOR PR
+  # ============================================
+  pr-quick-tests:
+    name: 🧪 Quick Security Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🧪 TypeScript Type Check
+        run: |
+          echo "🧪 Running TypeScript type checking..."
+          npx tsc --noEmit --skipLibCheck
+
+      - name: 🔍 Security Pattern Check
+        run: |
+          echo "🔍 Checking for security anti-patterns..."
+          
+          # Check for dangerous patterns
+          DANGEROUS_PATTERNS=(
+            "eval\("
+            "Function\("
+            "innerHTML\s*="
+            "dangerouslySetInnerHTML"
+            "process\.env\." 
+            "console\.log.*password\|secret\|key"
+          )
+          
+          VIOLATIONS=0
+          
+          for pattern in "${DANGEROUS_PATTERNS[@]}"; do
+            if grep -r -E "$pattern" src/ --include="*.ts" --include="*.tsx"; then
+              echo "❌ Dangerous pattern found: $pattern"
+              VIOLATIONS=$((VIOLATIONS + 1))
+            fi
+          done
+          
+          if [ $VIOLATIONS -gt 0 ]; then
+            echo "❌ Found $VIOLATIONS security violations!"
+            echo "Please review and fix the dangerous patterns above."
+            exit 1
+          fi
+          
+          echo "✅ No dangerous security patterns found!"
+
+      - name: 🔍 Dependency Vulnerability Quick Check
+        run: |
+          echo "🔍 Quick dependency vulnerability check..."
+          npm audit --audit-level=high --production
+          
+          echo "✅ Dependency check completed!"
+
+  # ============================================
+  # ✅ PR SECURITY APPROVAL
+  # ============================================
+  pr-security-approval:
+    name: ✅ PR Security Approval
+    runs-on: ubuntu-latest
+    needs: [pr-security-gate, pr-quick-tests]
+    if: always()
+    steps:
+      - name: 📊 Security Status Check
+        run: |
+          if [[ "${{ needs.pr-security-gate.result }}" == "success" && \
+                "${{ needs.pr-quick-tests.result }}" == "success" ]]; then
+            echo "✅ PR Security Review: APPROVED"
+            echo "All security checks passed for this PR."
+          else
+            echo "❌ PR Security Review: FAILED"
+            echo "Security issues detected. Please fix before merging."
+            exit 1
+          fi
+
+      - name: 🏷️ Add Security Label
+        uses: actions/github-script@v7
+        if: success()
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['security-approved']
+            });
+
+      - name: 🚫 Add Security Issue Label
+        uses: actions/github-script@v7
+        if: failure()
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['security-review-required']
+            });

@@ -1,0 +1,18 @@
+
+> lovas-political-site@0.1.0 dev
+> next dev
+
+   ▲ Next.js 14.1.3
+   - Local:        http://localhost:3000
+   - Environments: .env.local, .env
+
+ ✓ Ready in 1440ms
+ ○ Compiling /admin/login ...
+Browserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+ ✓ Compiled /admin/login in 1828ms (618 modules)
+ ✓ Compiled in 208ms (302 modules)
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 587ms (920 modules)
+[?25h

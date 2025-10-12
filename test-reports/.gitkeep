@@ -1,0 +1,11 @@
+# Test Reports Directory
+
+This directory contains automatically generated test execution reports.
+
+Reports are generated with timestamps and include:
+- Backend API v5 test results
+- Admin frontend test results
+- User frontend test results
+- Comprehensive summary reports
+
+**Note**: Report files are gitignored to avoid cluttering version control.

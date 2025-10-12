@@ -1,0 +1,32 @@
+{
+  "timestamp": "2025-07-02T14:35:44.561Z",
+  "environment": "development",
+  "summary": {
+    "videosProcessed": 1,
+    "variantsCreated": 1,
+    "totalOriginalSize": 22945645,
+    "totalCompressedSize": 1024677
+  },
+  "results": [
+    {
+      "original": {
+        "path": "/Users/lovas.zoltan/Seafile/Saját kötet/Me, Myself and I/webpage/lovas-political-site/public/uploads/escobarhun_cut.mp4",
+        "name": "escobarhun_cut.mp4",
+        "size": 22945645,
+        "directory": "/Users/lovas.zoltan/Seafile/Saját kötet/Me, Myself and I/webpage/lovas-political-site/public/uploads"
+      },
+      "variants": [
+        {
+          "quality": "medium",
+          "format": "mp4",
+          "path": "/Users/lovas.zoltan/Seafile/Saját kötet/Me, Myself and I/webpage/lovas-political-site/public/uploads/compressed/escobarhun_cut_480p.mp4",
+          "size": 1024677,
+          "savedSpace": 21920968,
+          "compressionRatio": 22.393051664085366
+        }
+      ],
+      "totalSaved": 21920968,
+      "compressionRatio": 0.9553432906331463
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+// V. kerület címadatbázis séma bővítése
+// Ez a fájl a fő schema.prisma-ba integrálható
+
+model District {
+  id          String   @id @default(cuid())
+  number      Int      @unique // Kerület száma (pl. 5)
+  name        String   @db.VarChar(100) // "V. kerület" vagy "Belváros-Lipótváros"
+  officialName String? @db.VarChar(200) // Hivatalos név
+  
+  streets     Street[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([number])
+}
+
+model Street {
+  id          String   @id @default(cuid())
+  name        String   @db.VarChar(200) // "Váci utca"
+  streetType  StreetType // utca, tér, körút, stb.
+  districtId  String
+  district    District @relation(fields: [districtId], references: [id])
+  
+  // Koordináták az utca vonalának meghatározásához
+  startLat    Float?
+  startLng    Float?
+  endLat      Float?
+  endLng      Float?
+  
+  addresses   Address[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([name])
+  @@index([districtId])
+  @@unique([name, districtId]) // Egy kerületben egyedi utcanév
+}
+
+model Address {
+  id            String   @id @default(cuid())
+  streetId      String
+  street        Street   @relation(fields: [streetId], references: [id])
+  
+  // Házszám adatok
+  houseNumber   String   @db.VarChar(10) // "15", "23A", "42-44"
+  houseNumberInt Int?    // Numerikus érték rendezéshez
+  building      String?  @db.VarChar(10) // Épület betűjel (A, B, C)
+  entrance      String?  @db.VarChar(10) // Lépcsőház
+  
+  // Irányítószám és koordináták
+  postalCode    String   @db.VarChar(10) // "1051"
+  latitude      Float?
+  longitude     Float?
+  
+  // Épület típusa és állapota
+  buildingType  BuildingType? // lakóház, irodaház, stb.
+  isActive      Boolean  @default(true) // Létező cím-e még
+  
+  // Kapcsolatok
+  issues        Issue[]  // Bejelentések ezen címen
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([streetId, houseNumberInt])
+  @@index([postalCode])
+  @@index([latitude, longitude])
+  @@unique([streetId, houseNumber]) // Egy utcában egyedi házszám
+}
+
+enum StreetType {
+  UTCA          // utca
+  TER           // tér
+  KORUT         // körút
+  SUGURUT       // sugárút
+  FASOR         // fasor
+  SETANY        // sétány
+  RAKPART       // rakpart
+  KOCSUT        // köcsút
+  LEPCSO        // lépcső
+  OTHER         // egyéb
+}
+
+enum BuildingType {
+  RESIDENTIAL   // lakóház
+  OFFICE        // irodaház
+  COMMERCIAL    // kereskedelmi
+  INSTITUTIONAL // intézményi
+  MIXED         // vegyes
+  INDUSTRIAL    // ipari
+  OTHER         // egyéb
+}

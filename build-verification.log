@@ -1,0 +1,128 @@
+
+> lovas-political-site@0.1.0 build
+> npm run validate:env && npm run compress-videos:check && next build
+
+
+> lovas-political-site@0.1.0 validate:env
+> node src/scripts/validate-env.js
+
+[1m[36m
+🔍 Environment Variable Validation[0m
+[36m=======================================[0m
+[1m
+📋 Checking required variables:[0m
+[32m✅ Present: NODE_ENV[0m
+[32m✅ Valid: NEXT_PUBLIC_BASE_URL[0m
+[32m✅ Present: DATABASE_URL[0m
+[32m✅ Valid: NEXTAUTH_URL[0m
+[32m✅ Valid: NEXTAUTH_SECRET (length: 64)[0m
+[32m✅ Valid: ADMIN_EMAIL[0m
+[32m✅ Valid: ADMIN_PASSWORD (length: 15)[0m
+[32m✅ Valid: RESEND_API_KEY[0m
+[32m✅ Valid: EMAIL_FROM_DOMAIN[0m
+[32m✅ Valid: CSRF_SECRET (length: 34)[0m
+[32m✅ Valid: ENCRYPTION_KEY (length: 62)[0m
+[1m
+🔍 Checking recommended variables:[0m
+[32m✅ Present: GOOGLE_VERIFICATION[0m
+[32m✅ Present: GOOGLE_ANALYTICS_ID[0m
+[33m⚠️  Missing (recommended): RATE_LIMIT_REDIS_URL[0m
+[33m⚠️  Missing (recommended): DIRECT_URL[0m
+[1m
+🔒 Security checks:[0m
+[32m✅ NEXTAUTH_SECRET strength[0m
+[32m✅ CSRF_SECRET strength[0m
+[32m✅ ENCRYPTION_KEY strength[0m
+[32m✅ Admin password strength[0m
+[33m⚠️  Production environment: NODE_ENV should be set to production for production deployment[0m
+[33m⚠️  HTTPS URLs: All URLs should use HTTPS in production[0m
+[1m
+🎛️  Feature flags:[0m
+[32m✅ ENABLE_NEWSLETTER: false[0m
+[32m✅ ENABLE_COMMENTS: false[0m
+[32m✅ ENABLE_MAINTENANCE_MODE: false[0m
+[32m✅ ENABLE_ERROR_EMAILS: false[0m
+[1m[36m
+📊 Validation Summary:[0m
+[36m=======================================[0m
+[33m[1m⚠️  VALIDATION PASSED WITH WARNINGS[0m
+[33mConsider addressing the warnings above for better security and functionality.[0m
+
+> lovas-political-site@0.1.0 compress-videos:check
+> node scripts/check-and-compress-videos.js
+
+🔍 Checking for uncompressed videos...
+⏭️  Skipping video compression in development mode
+💡 Use "npm run compress-videos" to compress manually
+💡 Use --force flag to compress in development
+ ⚠ The config property `experimental.turbo` is deprecated. Move this setting to `config.turbopack` or run `npx @next/codemod@latest next-experimental-turbo-to-turbopack .`
+   ▲ Next.js 15.5.2
+   - Environments: .env.local, .env.production, .env
+   - Experiments (use with caution):
+     ✓ optimizeCss
+     ✓ webpackBuildWorker
+     ✓ memoryBasedWorkersCount
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 4.0s
+   Linting and checking validity of types ...
+
+./src/app/admin/(withLayout)/slides/[id]/edit/page.tsx
+41:6  Warning: React Hook useEffect has a missing dependency: 'fetchSlide'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/hirek/[id]/page.tsx
+73:15  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/political-homepage.tsx
+124:6  Warning: React Hook useEffect has a missing dependency: 'getThemeForRoute'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/posts/[id]/page.tsx
+135:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/ImageUpload.tsx
+110:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/ServiceWorkerProvider.tsx
+103:6  Warning: React Hook useEffect has a missing dependency: 'registerServiceWorker'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/common/LazyWrapper.tsx
+79:8  Warning: React Hook React.useEffect has a missing dependency: 'enablePerformanceLogging'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/common/OptimizedImage.tsx
+152:7  Warning: Image elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+
+./src/components/slider/HeroSlider.tsx
+171:6  Warning: React Hook useEffect has a missing dependency: 'handleNext'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/video/AdaptiveVideoPlayer.tsx
+101:6  Warning: React Hook useEffect has missing dependencies: 'analytics', 'getOptimalQuality', 'initializeVideoCaching', 'loadVideoSource', 'preloadVideoSources', and 'videoId'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+134:6  Warning: React Hook useEffect has a missing dependency: 'checkAndAdaptQuality'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+237:6  Warning: React Hook useCallback has a missing dependency: 'changeQuality'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+299:6  Warning: React Hook useCallback has missing dependencies: 'preloader' and 'serviceWorker'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+318:6  Warning: React Hook useCallback has a missing dependency: 'serviceWorker'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+403:6  Warning: React Hook useEffect has a missing dependency: 'analytics'. Either include it or remove the dependency array. Mutable values like 'videoRef.current' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+
+./src/hooks/useSessionTimeout.ts
+101:6  Warning: React Hook useEffect has missing dependencies: 'config', 'handleTimeout', and 'handleWarning'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/lib/cache.ts
+205:6  Warning: React Hook React.useEffect has missing dependencies: 'fetcher' and 'options'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+229:6  Warning: React Hook React.useCallback has missing dependencies: 'fetcher' and 'options'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/lib/performance.tsx
+356:6  Warning: React Hook React.useLayoutEffect has a missing dependency: 'props'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+Failed to compile.
+
+./src/lib/auth.ts:51:30
+Type error: Property 'get' does not exist on type 'Promise<ReadonlyHeaders>'.
+
+[0m [90m 49 |[39m
+ [90m 50 |[39m     [36mfor[39m ([36mconst[39m header [36mof[39m ipHeaders) {
+[31m[1m>[22m[39m[90m 51 |[39m       [36mconst[39m ip [33m=[39m headersList[33m.[39m[36mget[39m(header)[33m;[39m
+ [90m    |[39m                              [31m[1m^[22m[39m
+ [90m 52 |[39m       [36mif[39m (ip [33m&&[39m ip [33m!==[39m [32m'unknown'[39m) {
+ [90m 53 |[39m         [36mreturn[39m ip[33m.[39msplit([32m','[39m)[[35m0[39m][33m.[39mtrim()[33m;[39m
+ [90m 54 |[39m       }[0m
+Next.js build worker exited with code: 1 and signal: null

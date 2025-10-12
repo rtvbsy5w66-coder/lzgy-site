@@ -1,0 +1,271 @@
+name: 🔧 Configuration Validation
+
+on:
+  push:
+    branches: [main-for-vercel, develop]
+    paths:
+      - 'next.config.*'
+      - 'vercel.json'
+      - 'package.json'
+      - 'tsconfig.json'
+      - '.eslintrc.*'
+  pull_request:
+    branches: [main-for-vercel, develop]
+    paths:
+      - 'next.config.*'
+      - 'vercel.json'
+      - 'package.json'
+      - 'tsconfig.json'
+      - '.eslintrc.*'
+
+jobs:
+  # ==========================================
+  # VALIDATE NEXT.JS CONFIGURATION
+  # ==========================================
+  validate-nextjs-config:
+    name: 🔍 Next.js Configuration
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: 🔍 Validate Next.js image configuration
+        run: |
+          echo "🔍 Checking Next.js configuration..."
+          echo "===================================="
+          
+          # Check if next.config file exists
+          if [ -f "next.config.js" ] || [ -f "next.config.mjs" ] || [ -f "next.config.ts" ]; then
+            echo "✅ Next.js config file found"
+            ls -la next.config.*
+          else
+            echo "❌ No Next.js config file found!"
+            exit 1
+          fi
+          
+          # Check for image configuration
+          if grep -q "images" next.config.* 2>/dev/null; then
+            echo ""
+            echo "✅ Image configuration found:"
+            echo "-----------------------------"
+            grep -A 15 "images" next.config.* | head -20
+            
+            # Check for required domains
+            echo ""
+            echo "🔍 Checking required image domains..."
+            
+            if grep -q "images.unsplash.com" next.config.*; then
+              echo "✅ Unsplash domain configured"
+            else
+              echo "⚠️ Unsplash domain not found - may cause image optimization issues"
+            fi
+            
+            if grep -q "nextjs.org" next.config.*; then
+              echo "✅ Next.js domain configured"  
+            else
+              echo "⚠️ Next.js domain not found - may cause favicon issues"
+            fi
+            
+          else
+            echo "⚠️ No image configuration detected!"
+            echo "This may cause image optimization issues on Vercel."
+            echo "Consider adding image domains to next.config file."
+          fi
+      
+      - name: 🔍 Validate TypeScript configuration
+        run: |
+          echo ""
+          echo "🔍 Checking TypeScript configuration..."
+          echo "======================================"
+          
+          if [ -f "tsconfig.json" ]; then
+            echo "✅ TypeScript config found"
+            
+            # Check if strict mode is enabled
+            if grep -q '"strict": true' tsconfig.json; then
+              echo "✅ Strict mode enabled"
+            else
+              echo "⚠️ Strict mode not enabled - consider enabling for better type safety"
+            fi
+            
+            # Check for path mapping
+            if grep -q '"paths"' tsconfig.json; then
+              echo "✅ Path mapping configured"
+            else
+              echo "⚠️ No path mapping found"
+            fi
+            
+          else
+            echo "❌ No TypeScript config found!"
+          fi
+
+  # ==========================================
+  # VALIDATE VERCEL CONFIGURATION
+  # ==========================================
+  validate-vercel-config:
+    name: 🔍 Vercel Configuration
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: 🔍 Check Vercel configuration
+        run: |
+          echo "🔍 Checking Vercel configuration..."
+          echo "=================================="
+          
+          if [ -f "vercel.json" ]; then
+            echo "✅ vercel.json exists"
+            echo ""
+            echo "Configuration contents:"
+            cat vercel.json
+            
+            echo ""
+            echo "🔍 Checking build command..."
+            if grep -q "buildCommand" vercel.json; then
+              BUILD_CMD=$(grep -o '"buildCommand": "[^"]*"' vercel.json | cut -d'"' -f4)
+              echo "✅ Build command found: $BUILD_CMD"
+              
+              if echo "$BUILD_CMD" | grep -q "prisma generate"; then
+                echo "✅ Prisma generation included in build"
+              else
+                echo "⚠️ Prisma generation not found in build command"
+              fi
+              
+            else
+              echo "⚠️ No custom build command specified"
+            fi
+            
+            echo ""
+            echo "🔍 Checking image configuration..."
+            if grep -q '"images"' vercel.json; then
+              echo "✅ Image configuration found in vercel.json"
+            else
+              echo "ℹ️ No image configuration in vercel.json (this is OK if configured in next.config)"
+            fi
+            
+          else
+            echo "ℹ️ No vercel.json found - using Vercel defaults"
+            echo "This is acceptable for most Next.js applications"
+          fi
+
+  # ==========================================
+  # VALIDATE PACKAGE.JSON
+  # ==========================================
+  validate-package:
+    name: 🔍 Package Configuration
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: 🔍 Validate package.json scripts
+        run: |
+          echo "🔍 Checking package.json scripts..."
+          echo "================================="
+          
+          # Check required scripts
+          REQUIRED_SCRIPTS=("build" "dev" "start" "lint" "test" "type-check")
+          
+          for script in "${REQUIRED_SCRIPTS[@]}"; do
+            if grep -q "\"$script\":" package.json; then
+              SCRIPT_CMD=$(grep -o "\"$script\": \"[^\"]*\"" package.json | cut -d'"' -f4)
+              echo "✅ $script: $SCRIPT_CMD"
+            else
+              echo "❌ Missing required script: $script"
+              exit 1
+            fi
+          done
+          
+          echo ""
+          echo "🔍 Checking optional but recommended scripts..."
+          
+          OPTIONAL_SCRIPTS=("test:watch" "test:coverage" "storybook")
+          
+          for script in "${OPTIONAL_SCRIPTS[@]}"; do
+            if grep -q "\"$script\":" package.json; then
+              echo "✅ $script (optional) - available"
+            else
+              echo "ℹ️ $script (optional) - not configured"
+            fi
+          done
+
+  # ==========================================
+  # VALIDATE ENVIRONMENT SETUP
+  # ==========================================
+  validate-environment:
+    name: 🔍 Environment Setup
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: 🔍 Check environment files
+        run: |
+          echo "🔍 Checking environment configuration..."
+          echo "======================================"
+          
+          # Check for env example files
+          if [ -f ".env.example" ]; then
+            echo "✅ .env.example found"
+            
+            # Count variables
+            VAR_COUNT=$(grep -c "^[A-Z]" .env.example || echo 0)
+            echo "ℹ️ Contains $VAR_COUNT environment variables"
+            
+          else
+            echo "⚠️ No .env.example found - consider adding one for documentation"
+          fi
+          
+          # Check for production env template
+          if [ -f ".env.production.example" ]; then
+            echo "✅ .env.production.example found"
+          else
+            echo "⚠️ No .env.production.example found"
+          fi
+          
+          # Warn about .env files in repo (security check)
+          if [ -f ".env" ]; then
+            echo "⚠️ .env file found in repository!"
+            echo "Make sure it doesn't contain sensitive data and is in .gitignore"
+          fi
+          
+          if [ -f ".env.local" ]; then
+            echo "⚠️ .env.local file found in repository!"
+            echo "This should typically be in .gitignore"
+          fi
+
+  # ==========================================
+  # SUMMARY REPORT
+  # ==========================================
+  config-summary:
+    name: 📋 Configuration Summary
+    runs-on: ubuntu-latest
+    needs: [validate-nextjs-config, validate-vercel-config, validate-package, validate-environment]
+    if: always()
+    
+    steps:
+      - name: 📋 Generate summary
+        run: |
+          echo "📋 CONFIGURATION VALIDATION SUMMARY"
+          echo "=================================="
+          echo ""
+          echo "Job Results:"
+          echo "- Next.js Config: ${{ needs.validate-nextjs-config.result }}"
+          echo "- Vercel Config: ${{ needs.validate-vercel-config.result }}"
+          echo "- Package Config: ${{ needs.validate-package.result }}"
+          echo "- Environment Setup: ${{ needs.validate-environment.result }}"
+          echo ""
+          
+          if [ "${{ needs.validate-nextjs-config.result }}" = "success" ] && \
+             [ "${{ needs.validate-vercel-config.result }}" = "success" ] && \
+             [ "${{ needs.validate-package.result }}" = "success" ] && \
+             [ "${{ needs.validate-environment.result }}" = "success" ]; then
+            echo "🎉 All configuration validations passed!"
+          else
+            echo "⚠️ Some configuration issues found. Please review the details above."
+          fi

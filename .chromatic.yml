@@ -1,0 +1,28 @@
+# Chromatic configuration
+projectToken: CHROMATIC_PROJECT_TOKEN
+
+# Build configuration
+buildScriptName: "build-storybook"
+
+# Visual testing configuration
+onlyChanged: true
+externals:
+  - "public/**"
+
+# Ignore patterns for visual testing
+ignoreLastBuildOnBranch: "main"
+
+# Enable auto-accept changes on main branch
+autoAcceptChanges: true
+
+# Test configuration
+skip: 
+  - "dependabot/**"
+  - "renovate/**"
+
+# Exit codes
+exitZeroOnChanges: false
+exitOnceUploaded: false
+
+# Threshold configuration
+threshold: 0.01

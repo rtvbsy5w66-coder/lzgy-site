@@ -1,0 +1,26 @@
+{
+  "name": "Ollama Mistral AI Server",
+  "description": "Production-ready AI server with Ollama, Mistral 7B, Nginx proxy, and authentication",
+  "dockerImage": "nvidia/cuda:12.1-runtime-ubuntu22.04",
+  "containerDiskInGb": 30,
+  "volumeInGb": 0,
+  "volumeMountPath": "",
+  "ports": "8080/http,11434/http,3001/http",
+  "env": [
+    {
+      "key": "AI_SERVER_TOKEN",
+      "value": "CHANGE_ME_IN_PRODUCTION_$(date +%s)"
+    },
+    {
+      "key": "OLLAMA_HOST",
+      "value": "0.0.0.0:11434"
+    },
+    {
+      "key": "OLLAMA_ORIGINS",
+      "value": "*"
+    }
+  ],
+  "startScript": "#!/bin/bash\n# Download and run setup script\ncurl -fsSL https://raw.githubusercontent.com/your-repo/main/setup-runpod.sh | bash\n\n# Start the AI server\n/app/start-ai-server.sh",
+  "category": "AI/ML",
+  "readme": "# 🚀 Ollama Mistral AI Server\n\n## Quick Start\n\n1. **Deploy Pod**: Use RTX 4090 or better GPU\n2. **Set Token**: Update AI_SERVER_TOKEN environment variable\n3. **Test Connection**: Visit https://your-pod-id-8080.proxy.runpod.net/health\n\n## Endpoints\n\n- **Health Check**: `/health` (no auth)\n- **AI API**: `/api/generate`, `/api/chat` (requires Bearer token)\n- **Status Page**: `/status`\n- **Monitoring**: SSH and run `/app/monitor.sh`\n\n## Authentication\n\nAll API endpoints require Bearer token authentication:\n\n```bash\ncurl -H \"Authorization: Bearer YOUR_TOKEN\" \\\n  https://your-pod-8080.proxy.runpod.net/api/generate \\\n  -d '{\"model\":\"mistral:7b\",\"prompt\":\"Hello\"}' \\\n  -H \"Content-Type: application/json\"\n```\n\n## Included Models\n\n- **mistral:7b** (4.4GB) - Primary model, fast and accurate\n- **llama2:7b** (3.8GB) - Backup model\n\n## Monitoring\n\n```bash\n# SSH into pod and run:\n/app/monitor.sh\n\n# Check logs:\ntail -f /var/log/ollama.log\ntail -f /var/log/auth.log\ntail -f /var/log/nginx/access.log\n```\n\n## Resource Requirements\n\n- **Minimum**: RTX 4090 (24GB VRAM)\n- **Recommended**: A100 (40GB VRAM) for better performance\n- **CPU**: 8+ cores\n- **RAM**: 16GB+\n- **Storage**: 25GB+\n\n## Cost Estimation\n\n- **RTX 4090**: $0.34/hour (~$245/month 24/7)\n- **A100**: $1.10/hour (~$792/month 24/7)\n- **On-demand usage**: ~60-80% cost savings\n\n## Security Features\n\n- ✅ Bearer token authentication\n- ✅ Rate limiting (20 requests/minute)\n- ✅ Nginx reverse proxy\n- ✅ Security headers\n- ✅ Request timeout protection\n- ✅ Internal service isolation\n\n## Support\n\nFor issues or questions, check:\n1. Pod logs: `supervisorctl status`\n2. Health endpoint: `/health`\n3. Monitor script: `/app/monitor.sh`\n4. Manual restart: `supervisorctl restart all`"
+}

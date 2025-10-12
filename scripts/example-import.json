@@ -1,0 +1,24 @@
+[
+  {
+    "title": "Példa bejegyzés 1 - Kampány indítás",
+    "content": "Ez egy példa bejegyzés teljes tartalma. Itt írhatod le részletesen a hírt vagy blogposztot.\n\nTöbb bekezdést is használhatsz.\n\n**Félkövér szöveg** vagy *dőlt szöveg* is működik, ha Markdown formázást használsz.",
+    "excerpt": "Rövid összefoglaló a bejegyzésről, ami a listákban jelenik meg.",
+    "status": "PUBLISHED",
+    "imageUrl": "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&fit=crop",
+    "categoryName": "Hírek",
+    "publishedAt": "2024-01-15T10:00:00Z"
+  },
+  {
+    "title": "Példa bejegyzés 2 - Környezetvédelem",
+    "content": "Második példa bejegyzés a környezetvédelemről.\n\nFontos témák:\n- Megújuló energia\n- Hulladékcsökkentés\n- Zöld közlekedés",
+    "excerpt": "Környezetvédelmi kezdeményezésről beszélünk",
+    "status": "PUBLISHED",
+    "categoryName": "Környezetvédelem",
+    "publishedAt": "2024-02-01T14:30:00Z"
+  },
+  {
+    "title": "Példa vázlat bejegyzés",
+    "content": "Ez egy vázlat bejegyzés, ami még nem publikált.",
+    "status": "DRAFT"
+  }
+]

@@ -1,0 +1,99 @@
+import { NextAuthOptions } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import { prisma } from "./prisma";
+import { User_role } from "@prisma/client";
+import { validateAuthEnvironment } from "./env-validation";
+
+// Environment variables validálás
+validateAuthEnvironment();
+
+export const authOptions: NextAuthOptions = {
+  // DEBUG KONFIGURÁCIÓ
+  debug: process.env.NODE_ENV === "development" || process.env.NEXTAUTH_DEBUG === "true",
+  
+  logger: {
+    error(code, metadata) {
+      console.error(`[NextAuth Error] ${new Date().toISOString()} - ${code}:`, metadata);
+    },
+    warn(code) {
+      console.warn(`[NextAuth Warning] ${new Date().toISOString()} - ${code}`);
+    },
+    debug(code, metadata) {
+      if (process.env.NEXTAUTH_DEBUG === "true") {
+        console.log(`[NextAuth Debug] ${new Date().toISOString()} - ${code}:`, metadata);
+      }
+    }
+  },
+
+  adapter: PrismaAdapter(prisma) as any,
+  
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: "openid email profile"
+        }
+      }
+    }),
+  ],
+
+  callbacks: {
+    async signIn({ user, account, profile }) {
+      console.log(`[SignIn Callback] Starting validation for: ${user.email}`);
+      console.log(`[SignIn Callback] Provider: ${account?.provider}`);
+      
+      const adminEmails = process.env.ADMIN_EMAILS?.split(',').map(email => email.trim()) || [
+        'admin@lovaszoltan.hu',
+        'plscallmegiorgio@gmail.com'
+      ];
+      
+      console.log(`[SignIn Callback] Admin emails whitelist:`, adminEmails);
+      
+      if (!user.email || !adminEmails.includes(user.email)) {
+        console.log(`[SignIn Callback] REJECTED - Unauthorized login attempt: ${user.email}`);
+        return false;
+      }
+
+      console.log(`[SignIn Callback] APPROVED - Authorized admin login: ${user.email}`);
+      return true;
+    },
+
+    async session({ session, user }) {
+      console.log(`[Session Callback] Creating session for user:`, { 
+        sessionEmail: session.user?.email,
+        userId: user?.id,
+        userRole: user?.role 
+      });
+      
+      if (session.user && user) {
+        session.user.id = user.id;
+        session.user.role = User_role.ADMIN;
+        console.log(`[Session Callback] Session created successfully`);
+      }
+      
+      return session;
+    },
+
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.role = User_role.ADMIN;
+        console.log(`[JWT Callback] JWT token updated for user: ${user.id}`);
+      }
+      return token;
+    }
+  },
+
+  session: {
+    strategy: "database",
+    maxAge: 24 * 60 * 60,
+  },
+
+  pages: {
+    signIn: "/admin/login",
+    error: "/admin/login",
+  }
+};

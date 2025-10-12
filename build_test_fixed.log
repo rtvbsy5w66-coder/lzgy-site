@@ -1,0 +1,161 @@
+
+> lovas-political-site@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.2
+   - Environments: .env.local, .env.production, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 3.4s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/33) ...
+   Generating static pages (8/33) 
+   Generating static pages (16/33) 
+   Generating static pages (24/33) 
+Error fetching active GLOBAL theme: Error [PrismaClientInitializationError]: 
+Invalid `prisma.theme.findFirst()` invocation:
+
+
+Error querying the database: Unknown authentication plugin `sha256_password'.
+    at async e (.next/server/app/program/page.js:1:1076)
+    at async i (.next/server/app/program/page.js:1:2870) {
+  clientVersion: '5.22.0',
+  errorCode: undefined
+}
+Error fetching active PROGRAM theme: Error [PrismaClientInitializationError]: 
+Invalid `prisma.theme.findFirst()` invocation:
+
+
+Error querying the database: Unknown authentication plugin `sha256_password'.
+    at async e (.next/server/app/program/page.js:1:1076)
+    at async i (.next/server/app/program/page.js:1:2870) {
+  clientVersion: '5.22.0',
+  errorCode: undefined
+}
+Error fetching theme for category Környezetvédelem: Error [PrismaClientInitializationError]: 
+Invalid `prisma.theme.findFirst()` invocation:
+
+
+Error querying the database: Unknown authentication plugin `sha256_password'.
+    at async f (.next/server/app/program/page.js:1:1236)
+    at async (.next/server/app/program/page.js:1:2806)
+    at async h (.next/server/app/program/page.js:1:2766)
+    at async i (.next/server/app/program/page.js:1:3018) {
+  clientVersion: '5.22.0',
+  errorCode: undefined
+}
+Error fetching theme for category Oktatás: Error [PrismaClientInitializationError]: 
+Invalid `prisma.theme.findFirst()` invocation:
+
+
+Error querying the database: Unknown authentication plugin `sha256_password'.
+    at async f (.next/server/app/program/page.js:1:1236)
+    at async (.next/server/app/program/page.js:1:2806)
+    at async h (.next/server/app/program/page.js:1:2766)
+    at async i (.next/server/app/program/page.js:1:3018) {
+  clientVersion: '5.22.0',
+  errorCode: undefined
+}
+Error fetching theme for category Egészségügy: Error [PrismaClientInitializationError]: 
+Invalid `prisma.theme.findFirst()` invocation:
+
+
+Error querying the database: Unknown authentication plugin `sha256_password'.
+    at async f (.next/server/app/program/page.js:1:1236)
+    at async (.next/server/app/program/page.js:1:2806)
+    at async h (.next/server/app/program/page.js:1:2766)
+    at async i (.next/server/app/program/page.js:1:3018) {
+  clientVersion: '5.22.0',
+  errorCode: undefined
+}
+Error fetching theme for category Szociális ügyek: Error [PrismaClientInitializationError]: 
+Invalid `prisma.theme.findFirst()` invocation:
+
+
+Error querying the database: Unknown authentication plugin `sha256_password'.
+    at async f (.next/server/app/program/page.js:1:1236)
+    at async (.next/server/app/program/page.js:1:2806)
+    at async h (.next/server/app/program/page.js:1:2766)
+    at async i (.next/server/app/program/page.js:1:3018) {
+  clientVersion: '5.22.0',
+  errorCode: undefined
+}
+Error fetching active GLOBAL theme: Error [PrismaClientInitializationError]: 
+Invalid `prisma.theme.findFirst()` invocation:
+
+
+Error querying the database: Unknown authentication plugin `sha256_password'.
+    at async e (.next/server/app/program/page.js:1:1076)
+    at async o (.next/server/app/esemenyek/page.js:2:10821) {
+  clientVersion: '5.22.0',
+  errorCode: undefined
+}
+Error fetching active EVENTS theme: Error [PrismaClientInitializationError]: 
+Invalid `prisma.theme.findFirst()` invocation:
+
+
+Error querying the database: Unknown authentication plugin `sha256_password'.
+    at async e (.next/server/app/program/page.js:1:1076)
+    at async o (.next/server/app/esemenyek/page.js:2:10821) {
+  clientVersion: '5.22.0',
+  errorCode: undefined
+}
+ ✓ Generating static pages (33/33)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS  Revalidate  Expire
+┌ ○ /                                    4.96 kB         110 kB
+├ ○ /_not-found                             1 kB         103 kB
+├ ○ /admin                               2.24 kB         108 kB
+├ ○ /admin/events                        2.37 kB         108 kB
+├ ƒ /admin/events/[id]/edit              2.78 kB         201 kB
+├ ○ /admin/events/new                    2.57 kB         201 kB
+├ ○ /admin/login                         2.29 kB         113 kB
+├ ○ /admin/messages                      2.64 kB         108 kB
+├ ƒ /admin/messages/[id]/edit            2.79 kB         108 kB
+├ ○ /admin/posts                          2.6 kB         108 kB
+├ ƒ /admin/posts/[id]/edit               1.88 kB         112 kB
+├ ○ /admin/posts/new                     1.75 kB         112 kB
+├ ○ /admin/slides                          32 kB         137 kB
+├ ƒ /admin/slides/[id]/edit              1.92 kB         115 kB
+├ ○ /admin/slides/new                    1.76 kB         115 kB
+├ ○ /admin/themes                         1.9 kB         107 kB
+├ ƒ /admin/themes/[type]                 1.77 kB         104 kB
+├ ○ /admin/themes/new                    3.37 kB         105 kB
+├ ƒ /admin/themes/new/[id]/edit          3.69 kB         106 kB
+├ ○ /api-test                            1.17 kB         103 kB
+├ ƒ /api/auth/[...nextauth]                187 B         102 kB
+├ ƒ /api/contact                           187 B         102 kB
+├ ƒ /api/events                            187 B         102 kB
+├ ƒ /api/events/[id]                       187 B         102 kB
+├ ○ /api/events/new                      2.56 kB         201 kB
+├ ƒ /api/hirek                             187 B         102 kB
+├ ƒ /api/messages                          187 B         102 kB
+├ ƒ /api/messages/[id]                     187 B         102 kB
+├ ƒ /api/posts                             187 B         102 kB
+├ ƒ /api/posts/[id]                        187 B         102 kB
+├ ƒ /api/program                           187 B         102 kB
+├ ƒ /api/slides                            187 B         102 kB
+├ ƒ /api/slides/[id]                       187 B         102 kB
+├ ƒ /api/test-themes                       187 B         102 kB
+├ ƒ /api/themes                            187 B         102 kB
+├ ƒ /api/themes/[type]                     187 B         102 kB
+├ ƒ /api/upload                            187 B         102 kB
+├ ○ /esemenyek                             187 B         102 kB          1h      1y
+├ ○ /hirek                               2.11 kB         104 kB
+├ ƒ /hirek/[id]                          1.68 kB         112 kB
+├ ○ /kapcsolat                           2.17 kB         104 kB
+├ ƒ /posts/[id]                          1.25 kB         112 kB
+├ ○ /program                               187 B         102 kB          1h      1y
+└ ○ /rolam                                3.4 kB         109 kB
++ First Load JS shared by all             102 kB
+  ├ chunks/1255-8db7ca931cd2d2fe.js      45.7 kB
+  ├ chunks/4bd1b696-f785427dddbba9fb.js  54.2 kB
+  └ other shared chunks (total)          2.06 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

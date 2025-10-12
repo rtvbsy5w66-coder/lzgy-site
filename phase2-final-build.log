@@ -1,0 +1,23 @@
+
+> lovas-political-site@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.2
+   - Environments: .env.local, .env.production, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 8.5s
+   Linting and checking validity of types ...
+Failed to compile.
+
+./src/components/slider/HeroSlider.tsx:34:67
+Type error: Block-scoped variable 'handleNext' used before its declaration.
+
+[0m [90m 32 |[39m       [36mreturn[39m () [33m=>[39m clearInterval(timer)[33m;[39m
+ [90m 33 |[39m     }
+[31m[1m>[22m[39m[90m 34 |[39m   }[33m,[39m [currentIndex[33m,[39m isTransitioning[33m,[39m isPaused[33m,[39m autoSlideInterval[33m,[39m handleNext])[33m;[39m
+ [90m    |[39m                                                                   [31m[1m^[22m[39m
+ [90m 35 |[39m
+ [90m 36 |[39m   [90m// Képek és videók előtöltése[39m
+ [90m 37 |[39m   useEffect(() [33m=>[39m {[0m
+Next.js build worker exited with code: 1 and signal: null

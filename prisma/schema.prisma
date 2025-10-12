@@ -1,0 +1,1416 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id             String        @id @default(cuid())
+  title          String        @db.VarChar(255)
+  slug           String        @unique @db.VarChar(255)
+  content        String        @db.Text
+  excerpt        String?       @db.Text
+  status         Status        @default(DRAFT)
+  category       String?       @db.VarChar(255) // Legacy field for backwards compatibility
+  newsCategoryId String?       // New relation to NewsCategory
+  subcategory    String?       @db.VarChar(255) // Subcategory/Series name (e.g., "A korrupció öl", "MZP, tévedsz!")
+  imageUrl       String?       @db.VarChar(255)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  newsCategory   NewsCategory? @relation(fields: [newsCategoryId], references: [id])
+
+  @@index([category])
+  @@index([newsCategoryId])
+  @@index([subcategory])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model NewsCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique @db.VarChar(100)
+  description String?  @db.Text
+  color       String   @db.VarChar(7) @default("#3b82f6") // Hex color
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  posts       Post[]
+
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model Event {
+  id            String              @id @default(cuid())
+  title         String              @db.VarChar(255)
+  description   String              @db.Text
+  location      String              @db.VarChar(255)
+  startDate     DateTime
+  endDate       DateTime
+  status        EventStatus         @default(UPCOMING)
+  imageUrl      String?             @db.VarChar(255)
+  maxAttendees  Int?                // Maximum number of attendees
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  registrations EventRegistration[]
+}
+
+model EventRegistration {
+  id          String   @id @default(cuid())
+  eventId     String
+  userId      String?  // Add userId for registered users
+  name        String   @db.VarChar(255)
+  email       String   @db.VarChar(255)
+  phone       String?  @db.VarChar(50)
+  message     String?  @db.Text
+  status      RegistrationStatus @default(PENDING)
+  cancelledAt DateTime? // When the registration was cancelled
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([eventId])
+  @@index([userId])
+  @@index([email])
+}
+
+model Theme {
+  id          String    @id @default(cuid())
+  name        String    @db.VarChar(255)
+  description String?   @db.Text
+  fromColor   String    @db.VarChar(255)
+  toColor     String    @db.VarChar(255)
+  textColor   String    @db.VarChar(255)
+  type        ThemeType
+  category    String?   @db.VarChar(255)
+  isActive    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  password      String?   // Hashed password for credentials login
+  image         String?
+  displayName   String?   @db.VarChar(100) // User's preferred display name/nickname
+  phoneNumber   String?   @db.VarChar(20)  // User's phone number
+  role              User_role @default(USER)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  welcomeEmailSent  Boolean   @default(false) // Track if welcome email was sent
+
+  accounts          Account[]
+  sessions          Session[]
+  quizResults       QuizResult[]
+  pollVotes         PollVote[]
+  signatures        Signature[]
+  eventRegistrations EventRegistration[]
+
+  // V. KERÜLETI BEJELENTÉSI RENDSZER
+  reports           Report[]
+  districtArea      String?   @db.VarChar(50) // "Belváros" | "Lipótváros" | "Mindkettő"
+}
+
+model Contact {
+  id              String        @id @default(cuid())
+  name            String
+  email           String
+  phone           String?
+  subject         String
+  message         String        @db.Text
+  district        String?
+  preferredContact String       @default("email")
+  newsletter      Boolean       @default(false)
+  status          ContactStatus @default(NEW)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("contacts")
+}
+
+model Slide {
+  id           String    @id @default(cuid())
+  type         SlideType
+  title        String    @db.VarChar(255)
+  subtitle     String?   @db.Text
+  order        Int       @default(0)
+  isActive     Boolean   @default(true)
+  gradientFrom String?   @db.VarChar(255)
+  gradientTo   String?   @db.VarChar(255)
+  mediaUrl     String?   @db.VarChar(255)
+  ctaText      String?   @db.VarChar(255)
+  ctaLink      String?   @db.VarChar(255)
+  videoType    String?
+  videoUrl     String?   @db.VarChar(255)
+  autoPlay     Boolean?  @default(true)
+  isLoop       Boolean?  @default(true)
+  isMuted      Boolean?  @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([order])
+  @@index([isActive])
+}
+
+model Admin {
+  id           String         @id @default(cuid())
+  username     String         @unique @db.VarChar(50)
+  email        String         @unique @db.VarChar(255)
+  passwordHash String         @db.VarChar(255)
+  role         User_role      @default(ADMIN)
+  isActive     Boolean        @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  AdminSession AdminSession[]
+}
+
+model AdminSession {
+  id        String   @id
+  token     String   @unique @db.VarChar(255)
+  userId    String
+  expiresAt DateTime
+  ipAddress String?  @db.VarChar(45)
+  userAgent String?  @db.Text
+  createdAt DateTime @default(now())
+  Admin     Admin    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "AdminSession_admin_fkey")
+
+  @@index([expiresAt])
+  @@index([token])
+  @@index([userId], map: "AdminSession_userId_fkey")
+}
+
+enum Status {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum EventStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum RegistrationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  ATTENDED
+}
+
+enum User_role {
+  USER
+  ADMIN
+  EDITOR
+  MODERATOR
+}
+
+enum ThemeType {
+  GLOBAL
+  PROGRAM
+  NEWS
+  EVENTS
+  CATEGORY
+}
+
+enum ContactStatus {
+  NEW
+  IN_PROGRESS
+  CLOSED
+}
+
+enum IssueStatus {
+  SUBMITTED      // Beküldve
+  REVIEWED       // Áttekintve
+  IN_PROGRESS    // Folyamatban
+  RESOLVED       // Megoldva
+  CLOSED         // Lezárva
+  REJECTED       // Elutasítva
+}
+
+enum IssuePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum SlideType {
+  GRADIENT
+  IMAGE
+  VIDEO
+}
+
+// Quiz System Models
+model Quiz {
+  id          String    @id @default(cuid())
+  title       String    @db.VarChar(255)
+  description String?   @db.Text
+  status      QuizStatus @default(DRAFT)
+  category    String?   @db.VarChar(100)
+  difficulty  QuizDifficulty @default(MEDIUM) // Nehézségi szint
+  timeLimit   Int?      // Time limit in minutes, null = unlimited
+  maxAttempts Int?      // Maximum attempts per user, null = unlimited
+  isPublic    Boolean   @default(true)
+  showResults Boolean   @default(true) // Show results after completion
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+
+  questions QuizQuestion[]
+  results   QuizResult[]
+
+  @@index([status])
+  @@index([category])
+  @@index([difficulty])
+  @@index([createdAt])
+  @@index([publishedAt])
+}
+
+model QuizQuestion {
+  id            String      @id @default(cuid())
+  quizId        String
+  question      String      @db.Text
+  questionType  QuestionType @default(MULTIPLE_CHOICE)
+  explanation   String?     @db.Text // Explanation shown after answering
+  points        Int         @default(1)
+  required      Boolean     @default(true)
+  sortOrder     Int         @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  quiz          Quiz           @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options       QuizOption[]
+  answers       QuizAnswer[]
+
+  @@index([quizId])
+  @@index([sortOrder])
+}
+
+model QuizOption {
+  id         String    @id @default(cuid())
+  questionId String
+  optionText String    @db.Text
+  isCorrect  Boolean   @default(false)
+  sortOrder  Int       @default(0)
+  createdAt  DateTime  @default(now())
+
+  question   QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answers    QuizAnswer[]
+
+  @@index([questionId])
+  @@index([sortOrder])
+}
+
+model QuizResult {
+  id            String    @id @default(cuid())
+  quizId        String
+  userId        String?   // null for anonymous users
+  sessionId     String?   // for anonymous tracking
+  score         Int       @default(0)
+  totalPoints   Int
+  timeSpent     Int?      // Time in seconds
+  completedAt   DateTime  @default(now())
+  userAgent     String?   @db.Text
+  ipAddress     String?   @db.VarChar(45)
+
+  quiz          Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user          User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  answers       QuizAnswer[]
+
+  @@index([quizId])
+  @@index([userId])
+  @@index([completedAt])
+  @@index([sessionId])
+}
+
+model QuizAnswer {
+  id          String    @id @default(cuid())
+  resultId    String
+  questionId  String
+  optionId    String?   // null for text answers
+  textAnswer  String?   @db.Text // for open-ended questions
+  isCorrect   Boolean   @default(false)
+  points      Int       @default(0)
+  answeredAt  DateTime  @default(now())
+
+  result      QuizResult   @relation(fields: [resultId], references: [id], onDelete: Cascade)
+  question    QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  option      QuizOption?  @relation(fields: [optionId], references: [id], onDelete: SetNull)
+
+  @@index([resultId])
+  @@index([questionId])
+  @@index([optionId])
+}
+
+enum QuizStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum QuizDifficulty {
+  EASY       // Könnyű
+  MEDIUM     // Közepes
+  HARD       // Nehéz
+  EXPERT     // Haladó
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  TEXT_INPUT
+  MULTIPLE_SELECT
+}
+
+// Voting System Models
+model Poll {
+  id              String      @id @default(cuid())
+  title           String      @db.VarChar(255)
+  description     String?     @db.Text
+  status          PollStatus  @default(DRAFT)
+  
+  // Participation settings
+  participationType ParticipationType @default(REGISTERED)
+  category        String?     @db.VarChar(100)
+  
+  // Time constraints
+  startDate       DateTime?   // When voting opens
+  endDate         DateTime?   // When voting closes
+  timeLimit       Int?        // Time limit per vote in minutes (for individual voting sessions)
+  
+  // Voting rules
+  isPublic        Boolean     @default(true)
+  allowAnonymous  Boolean     @default(true)
+  maxVotesPerUser Int?        // null = unlimited
+  showResults     ShowResultsType @default(AFTER_VOTING)
+  showLiveCount   Boolean     @default(false)
+  
+  // Results settings
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  publishedAt     DateTime?
+  
+  options         PollOption[]
+  votes           PollVote[]
+
+  @@index([status])
+  @@index([category])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([isActive])
+}
+
+model PollOption {
+  id          String      @id @default(cuid())
+  pollId      String
+  optionText  String      @db.Text
+  description String?     @db.Text
+  imageUrl    String?     @db.VarChar(255)
+  sortOrder   Int         @default(0)
+  createdAt   DateTime    @default(now())
+  
+  poll        Poll        @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes       PollVote[]
+
+  @@index([pollId])
+  @@index([sortOrder])
+}
+
+model PollVote {
+  id            String    @id @default(cuid())
+  pollId        String
+  optionId      String
+  userId        String?   // null for anonymous votes
+  sessionId     String?   // for anonymous tracking
+  
+  // Metadata
+  ipAddress     String?   @db.VarChar(45)
+  userAgent     String?   @db.Text
+  votedAt       DateTime  @default(now())
+  timeSpent     Int?      // Time spent voting in seconds
+  
+  poll          Poll      @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  option        PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([pollId, userId]) // One vote per user per poll (if not anonymous)
+  @@index([pollId])
+  @@index([optionId])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([votedAt])
+}
+
+model PollResult {
+  id              String    @id @default(cuid())
+  pollId          String
+  optionId        String
+  voteCount       Int       @default(0)
+  percentage      Float     @default(0.0)
+  calculatedAt    DateTime  @default(now())
+  
+  // Cached results for performance
+  @@unique([pollId, optionId])
+  @@index([pollId])
+  @@index([calculatedAt])
+}
+
+enum PollStatus {
+  DRAFT
+  SCHEDULED     // Published but voting hasn't started yet
+  ACTIVE        // Currently accepting votes
+  CLOSED        // Voting period ended
+  ARCHIVED
+}
+
+enum ShowResultsType {
+  NEVER         // Results never shown to public
+  AFTER_VOTING  // Show after user votes
+  LIVE          // Show real-time results
+  AFTER_END     // Show only after poll ends
+}
+
+enum ParticipationType {
+  ANONYMOUS     // Anonymous participation only
+  REGISTERED    // Registered participation only
+  HYBRID        // Allows both anonymous and registered
+}
+
+// Petition System Models
+model PetitionCategory {
+  id          String    @id @default(cuid())
+  name        String    @unique @db.VarChar(100)
+  description String?   @db.Text
+  color       String    @db.VarChar(7) @default("#3b82f6") // Hex color
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  petitions   Petition[]
+
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model Petition {
+  id              String            @id @default(cuid())
+  title           String            @db.VarChar(255)
+  description     String            @db.Text
+  fullText        String?           @db.Text // Detailed petition content
+  targetGoal      Int               @default(100) // Target number of signatures
+  
+  // Participation settings
+  participationType ParticipationType @default(REGISTERED)
+  
+  // Categories and organization
+  categoryId      String
+  tags            String?           @db.VarChar(500) // Comma-separated tags
+  
+  // Status and lifecycle
+  status          PetitionStatus    @default(DRAFT)
+  isPublic        Boolean           @default(true)
+  isActive        Boolean           @default(true)
+  
+  // Dates
+  startDate       DateTime?         // When petition becomes active
+  endDate         DateTime?         // When petition closes
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  publishedAt     DateTime?
+  
+  // Admin fields
+  createdBy       String?           // Admin user ID who created it
+  moderatedBy     String?           // Admin user ID who moderated it
+  moderatedAt     DateTime?
+  
+  // Relations
+  category        PetitionCategory  @relation(fields: [categoryId], references: [id])
+  signatures      Signature[]
+  
+  @@index([status])
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([isPublic])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([createdAt])
+  @@index([publishedAt])
+}
+
+model Signature {
+  id                String             @id @default(cuid())
+  petitionId        String
+  userId            String?            // Add userId for registered users
+  
+  // Participation type
+  isAnonymous       Boolean            @default(false)
+  sessionId         String?            @db.VarChar(255) // For anonymous tracking
+  
+  // Signer information (nullable for anonymous)
+  firstName         String?            @db.VarChar(100)
+  lastName          String?            @db.VarChar(100)
+  email             String?            @db.VarChar(255)
+  city              String?            @db.VarChar(100)
+  postalCode        String?            @db.VarChar(10)
+  
+  // Privacy and verification
+  isEmailVerified   Boolean            @default(false)
+  emailVerifyToken  String?            @unique @db.VarChar(255)
+  emailVerifiedAt   DateTime?
+  
+  // Display preferences (GDPR compliance)
+  showName          Boolean            @default(false) // Whether to show name publicly
+  allowContact      Boolean            @default(false) // Allow admin to contact signer
+  
+  // Status and moderation
+  status            SignatureStatus    @default(PENDING_VERIFICATION)
+  isVisible         Boolean            @default(true) // Admin can hide signatures
+  
+  // Metadata
+  ipAddress         String?            @db.VarChar(45)
+  userAgent         String?            @db.Text
+  signedAt          DateTime           @default(now())
+  
+  // Admin moderation
+  moderatedBy       String?            // Admin user ID who moderated
+  moderatedAt       DateTime?
+  moderationNote    String?            @db.Text
+  
+  // Relations
+  petition          Petition           @relation(fields: [petitionId], references: [id], onDelete: Cascade)
+  user              User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Indexing for performance and constraints
+  @@index([petitionId])
+  @@index([userId])
+  @@index([email])
+  @@index([sessionId])
+  @@index([status])
+  @@index([isEmailVerified])
+  @@index([signedAt])
+  @@index([isAnonymous])
+}
+
+enum PetitionStatus {
+  DRAFT           // Being created by admin
+  PENDING_REVIEW  // Submitted for review (if needed)
+  ACTIVE          // Live and accepting signatures
+  PAUSED          // Temporarily suspended
+  CLOSED          // No longer accepting signatures
+  ARCHIVED        // Moved to archive
+}
+
+enum SignatureStatus {
+  PENDING_VERIFICATION // Email verification pending
+  VERIFIED             // Email verified and signature active
+  REJECTED             // Rejected by moderation
+  SPAM                 // Marked as spam
+}
+
+// Partner/Banner System Models
+model Partner {
+  id          String      @id @default(cuid())
+  name        String      @db.VarChar(255)
+  description String?     @db.Text
+  imageUrl    String      @db.VarChar(500)
+  link        String?     @db.VarChar(500)
+  
+  // Display settings
+  isActive    Boolean     @default(true)
+  sortOrder   Int         @default(0)
+  
+  // Size and display preferences
+  width       Int?        // Preferred width in pixels
+  height      Int?        // Preferred height in pixels
+  category    PartnerCategory @default(TECHNOLOGY)
+  
+  // Metadata
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  createdBy   String?     // Admin user ID who created it
+  
+  @@index([isActive])
+  @@index([sortOrder])
+  @@index([category])
+  @@index([createdAt])
+}
+
+enum PartnerCategory {
+  TECHNOLOGY    // Tech partners (GitHub, React, etc.)
+  SPONSOR       // Financial sponsors
+  MEDIA         // Media partners
+  ORGANIZATION  // Partner organizations
+  SERVICE       // Service providers
+  OTHER         // Other partnerships
+}
+
+// Newsletter subscription categories
+enum NewsletterCategory {
+  SZAKPOLITIKA              // Professional politics
+  V_KERULET                 // 5th district local news
+  POLITIKAI_EDUGAMIFIKACIO  // Political education gamification
+  EU                        // European Union
+}
+
+// Newsletter subscription source
+enum NewsletterSource {
+  CONTACT_FORM // From contact form
+  PROFILE      // From user profile
+  DIRECT       // Direct subscription
+}
+
+// New advanced newsletter subscription system
+model NewsletterSubscription {
+  id                String                   @id @default(cuid())
+  email             String                   @db.VarChar(255)
+  name              String                   @db.VarChar(255)
+  categories        String                   @db.Text // JSON string of NewsletterCategory array
+  isActive          Boolean                  @default(true)
+  unsubscribeToken  String?                  @unique @db.VarChar(255) // For secure unsubscribe links
+  source            NewsletterSource         @default(CONTACT_FORM)
+  subscribedAt      DateTime                 @default(now())
+  lastUpdatedAt     DateTime                 @updatedAt
+  
+  @@unique([email]) // One subscription per email
+  @@index([email])
+  @@index([isActive])
+  @@map("newsletter_subscriptions")
+}
+
+// Newsletter sending and scheduling system
+model NewsletterCampaign {
+  id              String              @id @default(cuid())
+  name            String              @db.VarChar(255)
+  subject         String              @db.VarChar(255)
+  content         String              @db.Text
+  
+  // Scheduling and status
+  status          CampaignStatus      @default(DRAFT)
+  scheduledAt     DateTime?           // When to send (null = send immediately)
+  sentAt          DateTime?           // When it was actually sent
+  
+  // Recipients
+  recipientType   RecipientType       @default(ALL)
+  selectedIds     String?             @db.Text // JSON array of selected subscriber IDs
+  testEmail       String?             @db.VarChar(255)
+  
+  // Recurring settings
+  isRecurring     Boolean             @default(false)
+  recurringType   RecurringType?      // DAILY, WEEKLY, MONTHLY
+  recurringDay    Int?                // Day of week (1-7) or day of month (1-31)
+  nextSendDate    DateTime?           // Next scheduled send for recurring
+  
+  // A/B Testing
+  isAbTest        Boolean             @default(false)
+  abTestVariant   AbTestVariant?      // A, B
+  abTestSplit     Float?              // Percentage for variant A (0.5 = 50/50)
+  parentCampaignId String?            // Reference to parent campaign for A/B tests
+  
+  // Statistics
+  sentCount       Int                 @default(0)
+  openCount       Int                 @default(0)
+  clickCount      Int                 @default(0)
+  unsubscribeCount Int                @default(0)
+  
+  // Metadata
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  createdBy       String?             // Admin user ID
+  
+  // Relations
+  parentCampaign  NewsletterCampaign? @relation("AbTestCampaigns", fields: [parentCampaignId], references: [id])
+  abTestCampaigns NewsletterCampaign[] @relation("AbTestCampaigns")
+  analytics       NewsletterAnalytics[]
+  
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([sentAt])
+  @@index([isRecurring])
+  @@index([nextSendDate])
+  @@index([createdAt])
+  @@index([parentCampaignId])
+}
+
+// Detailed analytics for newsletter tracking
+model NewsletterAnalytics {
+  id              String              @id @default(cuid())
+  campaignId      String
+  subscriberEmail String              @db.VarChar(255)
+  
+  // Tracking events
+  sentAt          DateTime?
+  openedAt        DateTime?
+  firstOpenedAt   DateTime?
+  clickedAt       DateTime?
+  unsubscribedAt  DateTime?
+  
+  // Metadata
+  userAgent       String?             @db.Text
+  ipAddress       String?             @db.VarChar(45)
+  
+  // Relations
+  campaign        NewsletterCampaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  
+  @@unique([campaignId, subscriberEmail])
+  @@index([campaignId])
+  @@index([subscriberEmail])
+  @@index([sentAt])
+  @@index([openedAt])
+}
+
+enum CampaignStatus {
+  DRAFT           // Being created
+  SCHEDULED       // Scheduled for future sending
+  SENDING         // Currently being sent
+  SENT            // Successfully sent
+  FAILED          // Failed to send
+  CANCELLED       // Cancelled before sending
+}
+
+enum RecipientType {
+  ALL             // All active subscribers
+  SELECTED        // Selected subscribers
+  TEST            // Test email only
+  CATEGORY        // Specific newsletter categories
+}
+
+enum RecurringType {
+  DAILY           // Send daily
+  WEEKLY          // Send weekly (specify day of week)
+  MONTHLY         // Send monthly (specify day of month)
+  QUARTERLY       // Send quarterly
+}
+
+enum AbTestVariant {
+  A               // Variant A
+  B               // Variant B
+}
+
+// ===== CAMPAIGN SEQUENCE SYSTEM =====
+
+model CampaignSequence {
+  id              String          @id @default(cuid())
+  name            String          @db.VarChar(255)
+  description     String?         @db.Text
+  status          SequenceStatus  @default(DRAFT)
+  
+  // Targeting
+  targetAudience  String          @db.VarChar(100) // "STUDENTS", "VOTERS", "ALL" 
+  audienceFilter  Json?           // JSON szűrési feltételek
+  
+  // Timing
+  startDate       DateTime        // Mikor induljon a sorozat
+  totalDuration   Int             // Teljes időtartam napokban
+  
+  // Settings
+  isActive        Boolean         @default(true)
+  autoEnroll      Boolean         @default(true)   // Automatikus hozzáadás új subscriberekhez
+  
+  // Metadata  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  createdBy       String          @db.VarChar(255)
+  
+  // Relations
+  emails          SequenceEmail[]
+  executions      SequenceExecution[]
+  
+  @@index([status])
+  @@index([targetAudience])
+  @@index([startDate])
+  @@index([createdAt])
+}
+
+model SequenceEmail {
+  id              String           @id @default(cuid())
+  sequenceId      String
+  sequence        CampaignSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  
+  // Content
+  name            String           @db.VarChar(255)  // "Üdvözlő Email"
+  subject         String           @db.VarChar(500)  // Email tárgy
+  content         String           @db.Text      // HTML tartalom
+  previewText     String?          @db.VarChar(500)  // Email preview szöveg
+  
+  // Timing
+  order           Int              // Sorrend (1, 2, 3, 4...)
+  delayDays       Int              // Hány nap múlva (0=azonnal)
+  sendTime        String           @db.VarChar(10)   // "09:00" - mikor küldje el
+  timezone        String           @default("Europe/Budapest") @db.VarChar(50)
+  
+  // Conditions
+  conditions      Json?            // Speciális feltételek (JSON)
+  isActive        Boolean          @default(true)
+  
+  // Metadata
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  @@index([sequenceId])
+  @@index([order])
+  @@unique([sequenceId, order])
+}
+
+model SequenceExecution {
+  id              String           @id @default(cuid())
+  sequenceId      String
+  sequence        CampaignSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  
+  // Subscriber
+  subscriberEmail String           @db.VarChar(255)
+  subscriberName  String?          @db.VarChar(255)
+  subscriberId    String?          // Ha van user ID
+  
+  // Status
+  status          ExecutionStatus  @default(ACTIVE)
+  currentStep     Int              @default(1)       // Hanyadik emailnél tart
+  startedAt       DateTime         @default(now())
+  lastEmailSent   DateTime?
+  nextEmailDue    DateTime?        // Mikor küldje a következő emailt
+  completedAt     DateTime?
+  pausedAt        DateTime?
+  
+  // Tracking
+  emailsSent      Int              @default(0)
+  emailsOpened    Int              @default(0)  
+  emailsClicked   Int              @default(0)
+  unsubscribed    Boolean          @default(false)
+  
+  // Metadata
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  // Relations
+  logs            SequenceLog[]
+  
+  @@index([sequenceId])
+  @@index([subscriberEmail])
+  @@index([status])
+  @@index([nextEmailDue])
+  @@unique([sequenceId, subscriberEmail])
+}
+
+model SequenceLog {
+  id            String            @id @default(cuid())
+  executionId   String
+  execution     SequenceExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  
+  // Log Data
+  action        String            @db.VarChar(50)   // "EMAIL_SENT", "OPENED", "CLICKED", "UNSUBSCRIBED"
+  emailOrder    Int?              // Hanyadik email
+  details       Json?             // További részletek
+  timestamp     DateTime          @default(now())
+  
+  // Email tracking
+  campaignId    String?           // Newsletter campaign ID ha van
+  
+  @@index([executionId])
+  @@index([action])
+  @@index([timestamp])
+}
+
+// Enums for Sequence System
+enum SequenceStatus {
+  DRAFT           // Szerkesztés alatt
+  SCHEDULED       // Ütemezve, de még nem indult
+  RUNNING         // Aktív, emailek küldése folyamatban
+  PAUSED          // Szüneteltetve
+  COMPLETED       // Befejezve - minden email elküldve
+  CANCELLED       // Megszakítva
+}
+
+enum ExecutionStatus {
+  ACTIVE          // Aktív - emailek küldése folyamatban
+  PAUSED          // Szüneteltetve ennél a felhasználónál
+  COMPLETED       // Befejezve - minden email elküldve
+  CANCELLED       // Megszakítva
+  FAILED          // Sikertelen (pl. email bounce)
+  UNSUBSCRIBED    // Leiratkozott
+}
+
+// === ÖNKORMÁNYZATI PROBLÉMAKEZELŐ RENDSZER ===
+
+model IssueCategory {
+  id              String      @id @default(cuid())
+  name            String      @db.VarChar(100)
+  description     String?     @db.Text
+  icon            String?     @db.VarChar(100)   // Font Awesome icon class
+  color           String?     @db.VarChar(7)     // Hex color code
+  isActive        Boolean     @default(true)
+  order           Int         @default(0)        // Slider-ben való sorrend
+  
+  // Dinamikus űrlap mezők (JSON)
+  formFields      Json?       // Kategória-specifikus mezők konfigurációja
+  
+  // Kapcsolatok
+  issues          Issue[]
+  
+  // Metadata
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@index([isActive])
+  @@index([order])
+  @@map("issue_categories")
+}
+
+model Issue {
+  id                String            @id @default(cuid())
+  
+  // Kategória és alapadatok
+  categoryId        String
+  category          IssueCategory     @relation(fields: [categoryId], references: [id])
+  
+  // Bejelentő adatai
+  reporterName      String            @db.VarChar(200)
+  reporterEmail     String            @db.VarChar(255)
+  reporterPhone     String?           @db.VarChar(20)
+  reporterAddress   String?           @db.Text      // Lakóhely vagy érintett cím
+  
+  // Probléma részletei
+  title             String            @db.VarChar(300)
+  description       String            @db.Text
+  location          String?           @db.Text      // Hol van a probléma
+  urgency           IssuePriority     @default(MEDIUM)
+  
+  // Opcionális pontos cím kapcsolat
+  addressId         String?
+  address           Address?          @relation(fields: [addressId], references: [id])
+  
+  // Státusz és kezelés
+  status            IssueStatus       @default(SUBMITTED)
+  assignedTo        String?           @db.VarChar(255) // Kit bíztak meg a kezeléssel
+  resolution        String?           @db.Text      // Megoldás leírása
+  
+  // Dinamikus mezők (kategória-specifikus adatok)
+  customFields      Json?             // Kategóriánként eltérő extra mezők
+  
+  // Képek/dokumentumok  
+  attachments       Json?             // Fájl URL-ek listája JSON formátumban
+  
+  // Nyomonkövetés
+  trackingNumber    String            @unique @db.VarChar(20) // Követési szám (pl: "V5K-2024-001")
+  isPublic          Boolean           @default(true)    // Nyilvános-e a státusz
+  citizenNotified   Boolean           @default(false)   // Értesítették-e az állampolgárt
+  
+  // Időbélyegek
+  submittedAt       DateTime          @default(now())
+  reviewedAt        DateTime?
+  resolvedAt        DateTime?
+  closedAt          DateTime?
+  
+  // Kapcsolatok
+  statusUpdates     IssueStatusUpdate[]
+  notifications     IssueNotification[]
+  
+  // Metadata
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  
+  @@index([categoryId])
+  @@index([status])
+  @@index([trackingNumber])
+  @@index([reporterEmail])
+  @@index([submittedAt])
+  @@map("issues")
+}
+
+model IssueStatusUpdate {
+  id              String      @id @default(cuid())
+  issueId         String
+  issue           Issue       @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  
+  // Státusz változás
+  previousStatus  IssueStatus?
+  newStatus       IssueStatus
+  comment         String?     @db.Text
+  internalNote    String?     @db.Text        // Belső megjegyzés (nem látja az állampolgár)
+  
+  // Ki csinálta
+  updatedBy       String      @db.VarChar(255)
+  updatedByRole   String?     @db.VarChar(100) // "admin", "staff", "system"
+  
+  // Állampolgár értesítése
+  notifyCitizen   Boolean     @default(true)
+  citizenNotified Boolean     @default(false)
+  
+  // Metadata
+  createdAt       DateTime    @default(now())
+  
+  @@index([issueId])
+  @@index([newStatus])
+  @@index([createdAt])
+  @@map("issue_status_updates")
+}
+
+model IssueNotification {
+  id              String      @id @default(cuid())
+  issueId         String
+  issue           Issue       @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  
+  // Értesítés típusa és tartalma
+  type            String      @db.VarChar(50)   // "status_change", "reminder", "resolution"
+  subject         String      @db.VarChar(300)
+  message         String      @db.Text
+  
+  // Kinek küldjük
+  recipientEmail  String      @db.VarChar(255)
+  recipientName   String?     @db.VarChar(200)
+  
+  // Küldés státusza
+  sent            Boolean     @default(false)
+  sentAt          DateTime?
+  error           String?     @db.Text          // Hiba esetén
+  
+  // Metadata
+  createdAt       DateTime    @default(now())
+  
+  @@index([issueId])
+  @@index([sent])
+  @@index([createdAt])
+  @@map("issue_notifications")
+}
+
+// =============================================================================
+// BUDAPEST V. KERÜLET CÍMADATBÁZIS MODELLEK
+// =============================================================================
+
+model District {
+  id          String   @id @default(cuid())
+  number      Int      @unique // Kerület száma (pl. 5)
+  name        String   @db.VarChar(100) // "V. kerület" vagy "Belváros-Lipótváros"
+  officialName String? @db.VarChar(200) // Hivatalos név
+  
+  streets     Street[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([number])
+  @@map("districts")
+}
+
+model Street {
+  id          String   @id @default(cuid())
+  name        String   @db.VarChar(200) // "Váci utca"
+  streetType  StreetType // utca, tér, körút, stb.
+  districtId  String
+  district    District @relation(fields: [districtId], references: [id])
+  
+  // Koordináták az utca vonalának meghatározásához
+  startLat    Float?
+  startLng    Float?
+  endLat      Float?
+  endLng      Float?
+  
+  addresses   Address[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([name])
+  @@index([districtId])
+  @@unique([name, districtId]) // Egy kerületben egyedi utcanév
+  @@map("streets")
+}
+
+model Address {
+  id            String   @id @default(cuid())
+  streetId      String
+  street        Street   @relation(fields: [streetId], references: [id])
+  
+  // Házszám adatok
+  houseNumber   String   @db.VarChar(10) // "15", "23A", "42-44"
+  houseNumberInt Int?    // Numerikus érték rendezéshez
+  building      String?  @db.VarChar(10) // Épület betűjel (A, B, C)
+  entrance      String?  @db.VarChar(10) // Lépcsőház
+  
+  // Irányítószám és koordináták
+  postalCode    String   @db.VarChar(10) // "1051"
+  latitude      Float?
+  longitude     Float?
+  
+  // Épület típusa és állapota
+  buildingType  BuildingType? // lakóház, irodaház, stb.
+  isActive      Boolean  @default(true) // Létező cím-e még
+  
+  // Kapcsolatok
+  issues        Issue[]  // Bejelentések ezen címen
+  reports       Report[] // V. kerületi képviselői bejelentések
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([streetId, houseNumberInt])
+  @@index([postalCode])
+  @@index([latitude, longitude])
+  @@unique([streetId, houseNumber]) // Egy utcában egyedi házszám
+  @@map("addresses")
+}
+
+enum StreetType {
+  UTCA          // utca
+  TER           // tér
+  KORUT         // körút
+  SUGURUT       // sugárút
+  FASOR         // fasor
+  SETANY        // sétány
+  RAKPART       // rakpart
+  KOCSUT        // köcsút
+  LEPCSO        // lépcső
+  OTHER         // egyéb
+}
+
+enum BuildingType {
+  RESIDENTIAL   // lakóház
+  OFFICE        // irodaház
+  COMMERCIAL    // kereskedelmi
+  INSTITUTIONAL // intézményi
+  MIXED         // vegyes
+  INDUSTRIAL    // ipari
+  OTHER         // egyéb
+}
+
+// ===============================================
+// V. KERÜLETI KÉPVISELŐI BEJELENTÉSI RENDSZER
+// ===============================================
+
+model Report {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // KÉPVISELŐ ADATOK
+  authorId          String
+  author            User     @relation(fields: [authorId], references: [id])
+  representativeName String  @db.VarChar(100)
+  districtArea      String?  @db.VarChar(50) // "Belváros" | "Lipótváros"
+  
+  // KATEGÓRIA ÉS TARTALOM
+  category    String   @db.VarChar(50)  // infrastructure, cleanliness, stb.
+  subcategory String   @db.VarChar(50)  // road, sidewalk, stb.
+  title       String   @db.VarChar(200)
+  description String   @db.Text
+  
+  // HELYSZÍN
+  addressId   String?
+  address     Address? @relation(fields: [addressId], references: [id])
+  addressText String   @db.VarChar(255) // Manuális cím szöveg
+  postalCode  String?  @db.VarChar(10)
+  affectedArea String? @db.VarChar(255) // "15-17 házszám között"
+  
+  // PRIORITÁS ÉS FELELŐSSÉG
+  urgency     String   @default("medium") @db.VarChar(20) // low, medium, high, emergency
+  department  String?  @db.VarChar(50)  // public_works, utilities, stb.
+  estimatedCost String? @db.VarChar(30) // "under_500k", "500k_1m", stb.
+  
+  // STÁTUSZ NYOMON KÖVETÉS
+  status      String   @default("submitted") @db.VarChar(30) // submitted, in_progress, resolved, archived
+  assignedTo  String?  @db.VarChar(100)  // Munkatárs neve/ID-je
+  resolvedAt  DateTime?
+  resolutionNote String? @db.Text
+  
+  // ADMINISZTRATÍV
+  relatedCaseId String? @db.VarChar(50) // Kapcsolódó korábbi eset
+  legalIssue  Boolean  @default(false)
+  internalNotes String? @db.Text
+  
+  // SPECIFIKUS ADATOK (JSON)
+  categoryData Json?   // Kategória-specifikus extra adatok
+  
+  // KAPCSOLATOK
+  attachments ReportAttachment[]
+  history     ReportHistory[]
+  
+  @@index([authorId])
+  @@index([category])
+  @@index([status])
+  @@index([urgency])
+  @@index([createdAt])
+  @@index([addressId])
+  @@map("reports")
+}
+
+model ReportAttachment {
+  id        String   @id @default(cuid())
+  reportId  String
+  report    Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  
+  filename  String   @db.VarChar(255)
+  fileUrl   String   @db.VarChar(500)
+  fileType  String   @db.VarChar(50)  // "image/jpeg", "application/pdf"
+  fileSize  Int      // bytes
+  
+  uploadedAt DateTime @default(now())
+  
+  @@index([reportId])
+  @@map("report_attachments")
+}
+
+model ReportHistory {
+  id        String   @id @default(cuid())
+  reportId  String
+  report    Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  
+  changedBy String   @db.VarChar(100) // User name vagy ID
+  action    String   @db.VarChar(50)  // "created", "status_changed", "assigned", stb.
+  oldValue  String?  @db.VarChar(255)
+  newValue  String?  @db.VarChar(255)
+  comment   String?  @db.Text
+  
+  createdAt DateTime @default(now())
+  
+  @@index([reportId])
+  @@index([createdAt])
+  @@map("report_history")
+}
+
+// =============================================================================
+// POLITIKAI PROGRAM RENDSZER
+// =============================================================================
+
+model CategoryColor {
+  id          String   @id @default(cuid())
+  name        String   @unique @db.VarChar(100) // Kategória neve
+  color       String   @db.VarChar(20) // Hex szín (pl. #f59e0b)
+  description String?  @db.Text // Kategória leírása
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+  @@index([isActive])
+  @@map("category_colors")
+}
+
+model ProgramPoint {
+  id          String        @id @default(cuid())
+  title       String        @db.VarChar(255)
+  category    String        @db.VarChar(100)
+  description String        @db.Text
+  details     String        @db.Text
+  priority    Int           @default(2) // 1 = magas, 2 = közepes, 3 = alacsony
+  status      ProgramStatus @default(PLANNED)
+  imageUrl    String?       @db.VarChar(500)
+  customColor String?       @db.VarChar(20) // Egyedi szín hex formátumban (pl. #f59e0b)
+  sortOrder   Int           @default(0)
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  createdBy   String?       // Admin user ID
+
+  @@index([category])
+  @@index([priority])
+  @@index([status])
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("program_points")
+}
+
+enum ProgramStatus {
+  PLANNED       // Tervezett
+  IN_PROGRESS   // Folyamatban
+  COMPLETED     // Megvalósult
+  ON_HOLD       // Felfüggesztve
+  CANCELLED     // Megszakítva
+}
+
+// Passwordless Authentication - Email verification codes
+model VerificationToken {
+  id         String   @id @default(cuid())
+  email      String   @db.VarChar(255)
+  code       String   @db.VarChar(6) // 6 digit code
+  expiresAt  DateTime
+  used       Boolean  @default(false)
+  usedAt     DateTime?
+  ipAddress  String?  @db.VarChar(45) // IPv4 or IPv6
+  userAgent  String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  @@index([email])
+  @@index([code])
+  @@index([expiresAt])
+  @@index([used])
+  @@map("verification_tokens")
+}
+
+// Admin 2FA (Two-Factor Authentication) - Security codes for admin login
+model Admin2FACode {
+  id         String   @id @default(cuid())
+  email      String   @db.VarChar(255) // Admin email (plscallmegiorgio@gmail.com)
+  code       String   @db.VarChar(6) // 6 digit code
+  expiresAt  DateTime // 5 minute expiry
+  used       Boolean  @default(false)
+  usedAt     DateTime?
+  ipAddress  String?  @db.VarChar(45)
+  userAgent  String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  @@index([email])
+  @@index([code])
+  @@index([expiresAt])
+  @@index([used])
+  @@map("admin_2fa_codes")
+}
+
+// Site Settings - Global configuration for the website
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique @db.VarChar(100) // e.g., "site_name", "site_description", "contact_email"
+  value     String   @db.Text // JSON string for complex values
+  category  String   @db.VarChar(50) // "general", "email", "social", "seo", "features"
+  updatedAt DateTime @updatedAt
+  updatedBy String?  @db.VarChar(255) // Admin email who made the change
+  createdAt DateTime @default(now())
+
+  @@index([category])
+  @@map("site_settings")
+}

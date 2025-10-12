@@ -1,0 +1,126 @@
+"use client";
+
+import { signIn, useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { AlertCircle, Shield, Chrome } from "lucide-react";
+
+export default function AdminLogin() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const callbackUrl = searchParams.get('callbackUrl') || '/admin';
+
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      // All authenticated users from whitelist are admins
+      router.push(callbackUrl);
+    }
+  }, [session, status, router, callbackUrl]);
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await signIn('google', {
+        callbackUrl,
+        redirect: false
+      });
+
+      if (result?.error) {
+        if (result.error === 'AccessDenied') {
+          setError('⛔ Nincs jogosultságod az admin felület eléréséhez. Csak a whitelist-en szereplő email címek jelentkezhetnek be.');
+        } else {
+          setError('Bejelentkezési hiba történt. Próbáld újra.');
+        }
+      }
+    } catch (err) {
+      setError('Hiba történt a bejelentkezés során.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (status === 'authenticated') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8 text-center">
+          <Shield className="w-16 h-16 text-green-600 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            ✅ Sikeres bejelentkezés
+          </h2>
+          <p className="text-gray-600">Átirányítás az admin felületre...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="max-w-md w-full space-y-8">
+        <div className="bg-white shadow-2xl rounded-lg p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <Shield className="w-16 h-16 text-blue-600 mx-auto mb-4" />
+            <h2 className="text-3xl font-bold text-gray-900">Admin Bejelentkezés</h2>
+            <p className="mt-2 text-gray-600">
+              🔐 Csak engedélyezett email címek léphetnek be
+            </p>
+          </div>
+
+          {/* Error Display */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+              <div className="flex">
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                <div className="ml-3">
+                  <p className="text-sm text-red-800">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Google Sign In Button */}
+          <button
+            onClick={handleGoogleSignIn}
+            disabled={isLoading}
+            className="w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {isLoading ? (
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+            ) : (
+              <>
+                <Chrome className="w-5 h-5 mr-2" />
+                Bejelentkezés Google-lal
+              </>
+            )}
+          </button>
+
+          {/* Whitelist Info */}
+          <div className="mt-6 text-center">
+            <p className="text-xs text-gray-500">
+              📝 Engedélyezett email címek:<br />
+              • lovas.zoltan@mindenkimagyarorszaga.hu<br />
+              • admin@lovaszoltan.hu
+            </p>
+            <p className="text-xs text-gray-400 mt-2">
+              🔍 Minden bejelentkezési kísérlet naplózva van
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

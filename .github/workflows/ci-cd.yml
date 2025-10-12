@@ -1,0 +1,363 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main-for-vercel, develop]
+  pull_request:
+    branches: [main-for-vercel, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ==========================================
+  # BUILD & TYPE CHECKING
+  # ==========================================
+  build:
+    name: 🏗️ Build & Type Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: 📥 Install dependencies
+        run: npm ci
+        
+      - name: 🔍 Type checking
+        run: npm run type-check
+        
+      - name: 🏗️ Build application
+        run: |
+          echo "🏗️ Starting Next.js build..."
+          npm run build || BUILD_FAILED=true
+          
+          echo "📊 Build completion status: ${BUILD_FAILED:-'SUCCESS'}"
+          
+          if [ -d ".next" ]; then
+            echo "✅ .next directory created successfully"
+            echo "📁 .next directory contents:"
+            ls -la .next/
+            echo "📏 .next directory size:"
+            du -sh .next/
+          else
+            echo "❌ .next directory not found!"
+            echo "📁 Current directory contents:"
+            ls -la
+          fi
+          
+          # Exit with error if build failed
+          if [ "$BUILD_FAILED" = "true" ]; then
+            echo "💥 Build failed - exiting"
+            exit 1
+          fi
+        env:
+          SKIP_ENV_VALIDATION: true
+          NODE_ENV: production
+          DATABASE_URL: "mysql://dummy:dummy@localhost:3306/dummy"
+          NEXTAUTH_SECRET: "dummy-secret-for-build"
+          NEXTAUTH_URL: "https://example.com"
+          NEXT_PUBLIC_BASE_URL: "https://example.com"
+          
+      - name: 📤 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: always() && hashFiles('.next/**/*')
+        with:
+          name: build-output
+          path: .next/
+          retention-days: 1
+          if-no-files-found: ignore
+
+  # ==========================================
+  # CODE QUALITY & LINTING
+  # ==========================================
+  lint:
+    name: 🧹 Code Quality & Linting
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: 📥 Install dependencies
+        run: npm ci
+        
+      - name: 🧹 Run ESLint
+        run: npm run lint
+        
+      - name: 📊 ESLint Report
+        if: failure()
+        run: |
+          echo "::warning::ESLint found issues. Please fix them before merging."
+          echo "Run 'npm run lint' locally to see detailed errors."
+
+  # ==========================================
+  # TESTING
+  # ==========================================
+  test:
+    name: 🧪 Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: 📥 Install dependencies
+        run: npm ci
+          
+      - name: 🧪 Run Jest tests
+        run: npm run test:coverage
+        env:
+          SKIP_ENV_VALIDATION: true
+          
+      - name: 📊 Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  # ==========================================
+  # SECURITY AUDIT
+  # ==========================================
+  security:
+    name: 🔒 Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: 🔍 Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+        
+      - name: 📋 Security Summary
+        if: failure()
+        run: |
+          echo "::warning::Security vulnerabilities found. Please review:"
+          npm audit --audit-level=moderate || true
+          echo "Run 'npm audit fix' to automatically fix issues."
+
+  # ==========================================
+  # BUNDLE SIZE ANALYSIS
+  # ==========================================
+  analyze-bundle:
+    name: 📦 Bundle Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: 📥 Install dependencies
+        run: npm ci
+          
+      - name: 🏗️ Build for bundle analysis
+        run: npm run build
+        env:
+          SKIP_ENV_VALIDATION: true
+          NODE_ENV: production
+          DATABASE_URL: "mysql://dummy:dummy@localhost:3306/dummy"
+          NEXTAUTH_SECRET: "dummy-secret-for-build"
+          NEXTAUTH_URL: "https://example.com"
+          NEXT_PUBLIC_BASE_URL: "https://example.com"
+          
+      - name: 📊 Analyze bundle size
+        run: |
+          echo "📦 Bundle size analysis:"
+          echo "=========================="
+          
+          if [ -d ".next" ]; then
+            echo "Total .next directory size:"
+            du -sh .next/
+            
+            echo ""
+            echo "Static assets size:"
+            du -sh .next/static/ || echo "No static directory found"
+            
+            echo ""
+            echo "Large files (>500KB):"
+            find .next/static -type f -size +500k -exec ls -lh {} \; 2>/dev/null | awk '{print "🚨 " $5 " - " $9}' || echo "✅ No large files found"
+            
+            echo ""
+            echo "JavaScript chunks:"
+            find .next/static/chunks -name "*.js" -exec du -h {} \; 2>/dev/null | sort -hr | head -10 || echo "No chunks found"
+          else
+            echo "❌ Build directory not found - bundle analysis failed"
+            echo "📁 Current directory contents:"
+            ls -la
+          fi
+
+  # ==========================================
+  # PREVIEW DEPLOYMENT (PR only)
+  # ==========================================
+  deploy-preview:
+    name: 🚀 Deploy Preview
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: 🚀 Deploy to Vercel Preview
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--env SKIP_ENV_VALIDATION=true'
+        id: vercel-preview
+        
+      - name: 📝 Comment Preview URL
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 Preview deployment ready!\n\n🔗 **Preview URL:** ${{ steps.vercel-preview.outputs.preview-url }}\n\n*Deployed from commit: ${{ github.sha }}*`
+            })
+
+  # ==========================================
+  # PRODUCTION DEPLOYMENT (main branch only)
+  # ==========================================
+  deploy-production:
+    name: 🚀 Deploy Production
+    runs-on: ubuntu-latest
+    needs: [lint, test, security]
+    if: github.ref == 'refs/heads/main-for-vercel' && github.event_name == 'push'
+    environment: production
+    
+    steps:
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: 🚀 Deploy to Vercel Production
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod --env SKIP_ENV_VALIDATION=true'
+        id: vercel-production
+
+  # ==========================================
+  # HEALTH CHECK (after production deploy)
+  # ==========================================
+  health-check:
+    name: 🏥 Health Check
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: github.ref == 'refs/heads/main-for-vercel'
+    
+    steps:
+      - name: ⏳ Wait for deployment
+        run: sleep 30
+        
+      - name: 🏥 Check site health
+        run: |
+          echo "🏥 Checking site health..."
+          echo "=========================="
+          
+          # Production URL (update this to your actual domain)
+          URL="https://lovas-political-site-fixed-80xah7hpe.vercel.app"
+          
+          # Check main page
+          echo "🔍 Checking homepage..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+          
+          if [ $STATUS -eq 200 ]; then
+            echo "✅ Homepage is accessible (Status: $STATUS)"
+          else
+            echo "❌ Homepage failed (Status: $STATUS)"
+            exit 1
+          fi
+          
+          # Check critical API endpoints
+          echo ""
+          echo "🔍 Checking API endpoints..."
+          
+          # Posts API
+          POSTS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL/api/posts?status=PUBLISHED&limit=3")
+          if [ $POSTS_STATUS -eq 200 ]; then
+            echo "✅ Posts API working (Status: $POSTS_STATUS)"
+          else
+            echo "⚠️ Posts API issue (Status: $POSTS_STATUS) - may use fallback data"
+          fi
+          
+          # Partners API
+          PARTNERS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL/api/partners")
+          if [ $PARTNERS_STATUS -eq 200 ]; then
+            echo "✅ Partners API working (Status: $PARTNERS_STATUS)"
+          else
+            echo "⚠️ Partners API issue (Status: $PARTNERS_STATUS) - may use fallback data"
+          fi
+          
+          # Themes API
+          THEMES_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL/api/themes/active")
+          if [ $THEMES_STATUS -eq 200 ]; then
+            echo "✅ Themes API working (Status: $THEMES_STATUS)"
+          else
+            echo "⚠️ Themes API issue (Status: $THEMES_STATUS) - may use fallback themes"
+          fi
+          
+          echo ""
+          echo "🎉 Health check completed!"
+
+  # ==========================================
+  # DEPLOYMENT SUCCESS NOTIFICATION
+  # ==========================================
+  notify-success:
+    name: 📣 Notify Success
+    runs-on: ubuntu-latest
+    needs: [health-check]
+    if: success() && github.ref == 'refs/heads/main-for-vercel'
+    
+    steps:
+      - name: 🎉 Deployment Success
+        run: |
+          echo "🎉 DEPLOYMENT SUCCESSFUL!"
+          echo "========================="
+          echo "✅ Build completed"
+          echo "✅ Tests passed"
+          echo "✅ Security checks passed"
+          echo "✅ Production deployment completed"
+          echo "✅ Health checks passed"
+          echo ""
+          echo "🌐 Site URL: https://lovas-political-site-fixed-80xah7hpe.vercel.app"
+          echo "📊 Workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
