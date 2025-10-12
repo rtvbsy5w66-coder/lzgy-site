@@ -68,3 +68,7 @@ credentials.json
 secrets.json
 *secret*.json
 *key*.json
+
+# Large deployment archives
+netlify-deployment.tar.gz
+netlify-site.zip
