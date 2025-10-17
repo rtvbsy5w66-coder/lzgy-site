@@ -35,15 +35,35 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Update user profile
-    const updatedUser = await prisma.user.update({
-      where: {
-        email: session.user.email
-      },
-      data: {
-        displayName: displayName || null,
-        phoneNumber: phoneNumber || null,
-      },
+    // First check if user exists, if not create
+    let user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+
+    if (!user) {
+      // Create user if doesn't exist (OAuth scenario)
+      user = await prisma.user.create({
+        data: {
+          email: session.user.email,
+          name: session.user.name || null,
+          image: session.user.image || null,
+          displayName: displayName || null,
+          phoneNumber: phoneNumber || null,
+        }
+      });
+    } else {
+      // Update existing user
+      user = await prisma.user.update({
+        where: { email: session.user.email },
+        data: {
+          displayName: displayName || null,
+          phoneNumber: phoneNumber || null,
+        }
+      });
+    }
+
+    const updatedUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
       select: {
         id: true,
         name: true,

@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { subject, content, recipients, selectedIds, testEmail } = await request.json();
+    const { subject, content, recipients, selectedIds, testEmail, selectedCategory } = await request.json();
 
     if (!subject || !content) {
       return NextResponse.json(
@@ -45,6 +45,29 @@ export async function POST(request: Request) {
         recipientEmails = allSubscribers.map(sub => ({
           email: sub.email,
           name: sub.name
+        }));
+        break;
+
+      case 'category':
+        if (!selectedCategory) {
+          return NextResponse.json(
+            { error: 'Category is required' },
+            { status: 400 }
+          );
+        }
+        // Get subscribers who subscribed to this category
+        const categorySubscribers = await prisma.newsletterSubscription.findMany({
+          where: {
+            isActive: true,
+            categories: {
+              contains: selectedCategory
+            }
+          },
+          select: { email: true, name: true }
+        });
+        recipientEmails = categorySubscribers.map(sub => ({
+          email: sub.email,
+          name: sub.name || 'Kedves Feliratkozó'
         }));
         break;
 

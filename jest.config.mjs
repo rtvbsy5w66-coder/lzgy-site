@@ -6,16 +6,18 @@ const createJestConfig = nextJest({
 });
 
 const customJestConfig = {
-  setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
+  setupFilesAfterEnv: ["<rootDir>/test/utils/jest.setup.js"],
   testEnvironment: "jest-environment-jsdom",
   testMatch: [
-    "<rootDir>/__tests__/**/*.test.{ts,tsx,js,jsx}",
+    "<rootDir>/test/unit/**/*.test.{ts,tsx,js,jsx}",
+    "<rootDir>/test/integration/**/*.test.{ts,tsx,js,jsx}",
     "<rootDir>/src/**/*.test.{ts,tsx,js,jsx}"
   ],
   testPathIgnorePatterns: [
-    "<rootDir>/__tests__/__mocks__/",
-    "<rootDir>/__tests__/e2e/",
-    "<rootDir>/admin-auth.test.ts"
+    "<rootDir>/test/fixtures/",
+    "<rootDir>/test/e2e/",
+    "<rootDir>/test/scripts/",
+    "<rootDir>/node_modules/"
   ],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",

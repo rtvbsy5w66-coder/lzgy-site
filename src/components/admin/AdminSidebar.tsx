@@ -32,6 +32,7 @@ const navigation: NavItem[] = [
   { title: "Program", href: "/admin/program", icon: ClipboardList },
   { title: "Események", href: "/admin/events", icon: Calendar },
   { title: "Hírek", href: "/admin/posts", icon: FileText },
+  { title: "Hírlevél", href: "/admin/newsletter", icon: Mail },
   { title: "Kvízek", href: "/admin/quizzes", icon: HelpCircle },
   { title: "Szavazások", href: "/admin/polls", icon: Vote },
   { title: "Petíciók", href: "/admin/petitions", icon: FileSignature },

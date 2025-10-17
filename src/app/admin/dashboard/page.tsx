@@ -183,9 +183,17 @@ export default function AdminDashboard() {
       bgColor: "bg-purple-50",
     },
     {
+      title: "Hírlevél",
+      description: "Newsletter kampányok kezelése",
+      icon: Mail,
+      link: "/admin/newsletter",
+      color: "text-orange-600",
+      bgColor: "bg-orange-50",
+    },
+    {
       title: "Üzenetek",
       description: "Kapcsolatfelvételi üzenetek",
-      icon: Mail,
+      icon: MessageSquare,
       link: "/admin/messages",
       color: "text-green-600",
       bgColor: "bg-green-50",
@@ -241,6 +249,36 @@ export default function AdminDashboard() {
               </div>
             </Link>
           ))}
+        </div>
+
+        {/* Quick Links */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            Gyors Hivatkozások
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {quickLinks.map((link) => (
+              <Link
+                key={link.title}
+                href={link.link}
+                className={`${link.bgColor} dark:bg-gray-800 p-6 rounded-xl hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700`}
+              >
+                <div className="flex items-start gap-4">
+                  <div className={`${link.color} dark:${link.color}`}>
+                    <link.icon className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                      {link.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {link.description}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

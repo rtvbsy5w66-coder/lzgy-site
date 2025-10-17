@@ -1,0 +1,23 @@
+# Teszt eredmények
+reports/*.html
+reports/*.log
+reports/*.json
+
+# Coverage riportok
+coverage/
+*.lcov
+
+# Teszt futtatás közben generált fájlok
+*.tmp
+*.temp
+
+# Node debug logok
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
