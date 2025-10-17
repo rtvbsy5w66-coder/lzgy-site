@@ -11,6 +11,7 @@ const customJestConfig = {
   testMatch: [
     "<rootDir>/test/unit/**/*.test.{ts,tsx,js,jsx}",
     "<rootDir>/test/integration/**/*.test.{ts,tsx,js,jsx}",
+    "<rootDir>/test/security/**/*.test.{ts,tsx,js,jsx}",
     "<rootDir>/src/**/*.test.{ts,tsx,js,jsx}"
   ],
   testPathIgnorePatterns: [
