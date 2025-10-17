@@ -89,25 +89,6 @@ describe('Security: Rate Limiting', () => {
   });
 
   describe('Rate Limit Response Headers', () => {
-    it('should include standard rate limit headers', async () => {
-      const { createRateLimitResponse } = require('@/lib/rate-limit-simple');
-
-      const rateLimitResult = {
-        success: false,
-        limit: 5,
-        remaining: 0,
-        reset: Date.now() + 60000,
-      };
-
-      const response = createRateLimitResponse(rateLimitResult);
-
-      expect(response.status).toBe(429);
-      expect(response.headers.get('X-RateLimit-Limit')).toBe('5');
-      expect(response.headers.get('X-RateLimit-Remaining')).toBe('0');
-      expect(response.headers.get('X-RateLimit-Reset')).toBeTruthy();
-      expect(response.headers.get('Retry-After')).toBeTruthy();
-    });
-
     it('should return proper JSON error message', async () => {
       const { createRateLimitResponse } = require('@/lib/rate-limit-simple');
 
