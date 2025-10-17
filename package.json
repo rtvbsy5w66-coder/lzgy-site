@@ -51,6 +51,8 @@
     "@tiptap/starter-kit": "^2.10.4",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/nodemailer": "^7.0.1",
+    "@upstash/ratelimit": "^2.0.6",
+    "@upstash/redis": "^1.35.6",
     "@vercel/blob": "^0.23.4",
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
