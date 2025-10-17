@@ -8,6 +8,10 @@
 
 # testing
 /coverage
+/test/reports/*.html
+/test/reports/*.log
+/test/reports/*.json
+*.lcov
 
 # next.js
 /.next/
@@ -72,3 +76,6 @@ secrets.json
 # Large deployment archives
 netlify-deployment.tar.gz
 netlify-site.zip
+
+# Security Documentation (contains sensitive information)
+SECURITY_KEY_ROTATION_GUIDE.md
