@@ -3,19 +3,31 @@ export const dynamic = 'force-dynamic';
 import { prisma } from "@/lib/prisma";
 import { sendNewsletterConfirmation, sendContactNotification } from "@/lib/email";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { NewsletterCategory, NewsletterSource } from "@/types/newsletter";
+import { NewsletterSource } from "@/types/newsletter";
+import { validateRequest } from "@/lib/validations/validate";
+import { newsletterSubscribeSchema } from "@/lib/validations/newsletter";
 import crypto from 'crypto';
 
-// POST /api/newsletter/subscribe - Subscribe to newsletter categories
+/**
+ * POST /api/newsletter/subscribe
+ *
+ * Subscribe to newsletter categories with Zod validation
+ *
+ * Security features:
+ * - Rate limiting (5 requests per 15 minutes)
+ * - Input validation with Zod
+ * - Email normalization
+ * - Category validation
+ */
 export async function POST(request: Request) {
   try {
     console.log("Newsletter subscription request received");
-    
+
     // Rate limiting
-    const clientIP = request.headers.get('x-forwarded-for') || 
-                     request.headers.get('x-real-ip') || 
+    const clientIP = request.headers.get('x-forwarded-for') ||
+                     request.headers.get('x-real-ip') ||
                      'unknown';
-    
+
     const isAllowed = await checkRateLimit({
       limit: 5, // Maximum 5 subscription requests
       windowMs: 15 * 60 * 1000, // 15 minutes
@@ -25,50 +37,19 @@ export async function POST(request: Request) {
     if (!isAllowed) {
       console.warn(`Rate limit exceeded for newsletter subscription. IP: ${clientIP}`);
       return NextResponse.json(
-        { 
+        {
           error: "Túl sok kérés. Kérjük, várjon 15 percet.",
           retryAfter: 900
-        }, 
+        },
         { status: 429 }
       );
     }
 
-    const data = await request.json();
-    const { name, email, categories, source = 'CONTACT_FORM' } = data;
+    // Validate request with Zod schema
+    const validation = await validateRequest(request, newsletterSubscribeSchema);
+    if (!validation.success) return validation.error;
 
-    // Validation
-    if (!name || !email || !categories || !Array.isArray(categories)) {
-      return NextResponse.json(
-        { error: 'Név, email cím és kategóriák megadása kötelező' },
-        { status: 400 }
-      );
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'Érvénytelen email formátum' },
-        { status: 400 }
-      );
-    }
-
-    // Validate categories
-    const validCategories = Object.values(NewsletterCategory);
-    const invalidCategories = categories.filter((cat: string) => !validCategories.includes(cat as NewsletterCategory));
-    if (invalidCategories.length > 0) {
-      return NextResponse.json(
-        { error: `Érvénytelen kategóriák: ${invalidCategories.join(', ')}` },
-        { status: 400 }
-      );
-    }
-
-    if (categories.length === 0) {
-      return NextResponse.json(
-        { error: 'Legalább egy kategóriát ki kell választani' },
-        { status: 400 }
-      );
-    }
+    const { name, email, categories, source = 'CONTACT_FORM' } = validation.data;
 
     // Generate unsubscribe token
     const unsubscribeToken = crypto.randomBytes(32).toString('hex');
@@ -77,7 +58,7 @@ export async function POST(request: Request) {
 
     // Check if subscription already exists
     const existingSubscription = await prisma.newsletterSubscription.findUnique({
-      where: { email: email.toLowerCase().trim() }
+      where: { email }  // email is already normalized by Zod
     });
 
     let subscription;
@@ -101,12 +82,12 @@ export async function POST(request: Request) {
       console.log("Creating new newsletter subscription");
       subscription = await prisma.newsletterSubscription.create({
         data: {
-          email: email.toLowerCase().trim(),
-          name: name,
+          email,  // Already normalized by Zod
+          name,
           categories: JSON.stringify(categories),
           isActive: true,
           source: source as NewsletterSource,
-          unsubscribeToken: unsubscribeToken
+          unsubscribeToken
         }
       });
     }
