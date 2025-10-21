@@ -35,15 +35,36 @@ Object.defineProperty(global, 'Response', {
 Object.defineProperty(global, 'Headers', {
   value: class Headers {
     constructor(init = {}) {
-      this.map = new Map(Object.entries(init));
+      this.map = new Map();
+
+      // Handle Headers object
+      if (init && typeof init.entries === 'function') {
+        for (const [key, value] of init.entries()) {
+          this.map.set(key.toLowerCase(), value);
+        }
+      }
+      // Handle plain object
+      else if (init && typeof init === 'object') {
+        for (const [key, value] of Object.entries(init)) {
+          this.map.set(key.toLowerCase(), value);
+        }
+      }
     }
-    
+
     get(name) {
       return this.map.get(name.toLowerCase());
     }
-    
+
     set(name, value) {
       this.map.set(name.toLowerCase(), value);
+    }
+
+    entries() {
+      return this.map.entries();
+    }
+
+    forEach(callback) {
+      this.map.forEach((value, key) => callback(value, key, this));
     }
   }
 });

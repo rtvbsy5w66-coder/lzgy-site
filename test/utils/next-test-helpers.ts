@@ -9,22 +9,58 @@ import { NextRequest, NextResponse } from 'next/server';
 /**
  * Create a mock NextRequest for testing
  * This properly mocks the Next.js Request object with all required properties
+ *
+ * Supports both syntaxes:
+ * - createMockNextRequest('https://example.com', { method: 'POST' })
+ * - createMockNextRequest({ url: 'https://example.com', method: 'POST' })
  */
-export function createMockNextRequest(url: string, options: {
-  method?: string;
-  headers?: Record<string, string>;
-  body?: any;
-} = {}): NextRequest {
+export function createMockNextRequest(
+  urlOrOptions: string | { url: string; method?: string; headers?: Record<string, string>; body?: any },
+  optionsOrUndefined?: {
+    method?: string;
+    headers?: Record<string, string>;
+    body?: any;
+  }
+): NextRequest {
+  // Handle both call signatures
+  let url: string;
+  let options: { method?: string; headers?: Record<string, string>; body?: any };
+
+  if (typeof urlOrOptions === 'string') {
+    // Old syntax: createMockNextRequest('url', { options })
+    url = urlOrOptions;
+    options = optionsOrUndefined || {};
+  } else {
+    // New syntax: createMockNextRequest({ url: 'url', method: 'GET' })
+    url = urlOrOptions.url;
+    options = {
+      method: urlOrOptions.method,
+      headers: urlOrOptions.headers,
+      body: urlOrOptions.body,
+    };
+  }
+
+  // Add protocol if missing (for relative URLs)
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = 'https://example.com' + url;
+  }
+
   const urlObj = new URL(url);
 
   const headers = new Headers(options.headers || {});
 
-  // Create a proper Request object
-  const request = new Request(url, {
+  // Create a proper Request object with proper initialization
+  const requestInit: RequestInit = {
     method: options.method || 'GET',
     headers: headers,
-    body: options.body ? JSON.stringify(options.body) : undefined,
-  });
+  };
+
+  // Only add body for methods that support it
+  if (options.body && options.method && !['GET', 'HEAD'].includes(options.method)) {
+    requestInit.body = JSON.stringify(options.body);
+  }
+
+  const request = new Request(url, requestInit);
 
   // Cast to NextRequest - this works because NextRequest extends Request
   const nextRequest = request as any as NextRequest;

@@ -9,7 +9,7 @@ import {
   validateCSRFToken,
   requireCSRFToken,
 } from '@/lib/csrf-protection';
-import { createMockNextRequest } from '../utils/next-test-helpers';
+import { createMockNextRequest, getResponseJson } from '../utils/next-test-helpers';
 
 describe('OWASP A08: CSRF Protection', () => {
   describe('generateCSRFToken()', () => {
@@ -112,8 +112,7 @@ describe('OWASP A08: CSRF Protection', () => {
       const req = createMockNextRequest({ url: '/api/test', method: 'POST' });
       const result = requireCSRFToken(req);
 
-      const text = await result.error!.text();
-      const json = JSON.parse(text);
+      const json = await getResponseJson(result.error!);
 
       expect(json.code).toBe('CSRF_TOKEN_MISSING');
       expect(json.error).toBeDefined();
@@ -179,8 +178,7 @@ describe('OWASP A08: CSRF Protection', () => {
       });
 
       const result = requireCSRFToken(req);
-      const text = await result.error!.text();
-      const json = JSON.parse(text);
+      const json = await getResponseJson(result.error!);
 
       expect(json.code).toBe('CSRF_TOKEN_INVALID');
     });
