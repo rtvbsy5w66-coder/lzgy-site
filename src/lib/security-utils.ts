@@ -163,15 +163,23 @@ export class SecurityValidator {
   // Check for SQL injection attempts
   static containsSqlInjection(input: string): boolean {
     if (typeof input !== 'string') return false;
-    
-    return SQL_INJECTION_PATTERNS.some(pattern => pattern.test(input));
+
+    return SQL_INJECTION_PATTERNS.some(pattern => {
+      // Reset lastIndex to avoid stateful regex bugs with /i flag
+      pattern.lastIndex = 0;
+      return pattern.test(input);
+    });
   }
 
   // Check for XSS attempts
   static containsXss(input: string): boolean {
     if (typeof input !== 'string') return false;
-    
-    return XSS_PATTERNS.some(pattern => pattern.test(input));
+
+    return XSS_PATTERNS.some(pattern => {
+      // Reset lastIndex to avoid stateful regex bugs with /g flag
+      pattern.lastIndex = 0;
+      return pattern.test(input);
+    });
   }
 
   // Validate content fields (posts, descriptions) 
