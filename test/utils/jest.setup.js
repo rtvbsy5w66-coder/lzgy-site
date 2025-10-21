@@ -168,11 +168,62 @@ jest.mock('@/lib/prisma', () => ({
         content: 'This is a test post content.',
         slug: 'test-post',
         status: 'DRAFT',
+        category: 'Általános',
         imageUrl: null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }),
-      findMany: jest.fn().mockResolvedValue([]),
+      findMany: jest.fn().mockImplementation((args) => {
+        const allPosts = [
+          {
+            id: 'post-1',
+            title: 'Első teszt poszt',
+            content: 'Ez az első teszt poszt tartalma.',
+            slug: 'elso-teszt-poszt',
+            status: 'PUBLISHED',
+            category: 'Környezetvédelem',
+            imageUrl: null,
+            createdAt: new Date('2025-01-01').toISOString(),
+            updatedAt: new Date('2025-01-01').toISOString(),
+          },
+          {
+            id: 'post-2',
+            title: 'Második teszt poszt',
+            content: 'Ez a második teszt poszt tartalma.',
+            slug: 'masodik-teszt-poszt',
+            status: 'PUBLISHED',
+            category: 'Oktatás',
+            imageUrl: null,
+            createdAt: new Date('2025-01-02').toISOString(),
+            updatedAt: new Date('2025-01-02').toISOString(),
+          },
+          {
+            id: 'post-3',
+            title: 'Harmadik teszt poszt',
+            content: 'Ez a harmadik teszt poszt tartalma.',
+            slug: 'harmadik-teszt-poszt',
+            status: 'DRAFT',
+            category: 'Egészségügy',
+            imageUrl: null,
+            createdAt: new Date('2025-01-03').toISOString(),
+            updatedAt: new Date('2025-01-03').toISOString(),
+          },
+        ];
+
+        // Apply filters if provided
+        let filtered = [...allPosts];
+
+        if (args && args.where) {
+          if (args.where.status) {
+            filtered = filtered.filter(post => post.status === args.where.status);
+          }
+          if (args.where.category) {
+            filtered = filtered.filter(post => post.category === args.where.category);
+          }
+        }
+
+        return Promise.resolve(filtered);
+      }),
     },
     event: {
       create: jest.fn().mockResolvedValue({
