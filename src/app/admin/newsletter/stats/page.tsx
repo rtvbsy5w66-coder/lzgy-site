@@ -294,7 +294,7 @@ export default function StatsPage() {
             💡 Tippek a jobb eredményekhez
           </h3>
           <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
-            <li>• Személyre szabott tárgysorok (pl. "Kedves [Név]")</li>
+            <li>• Személyre szabott tárgysorok (pl. &quot;Kedves [Név]&quot;)</li>
             <li>• Rövid, lényegre törő tartalom</li>
             <li>• Egyértelmű call-to-action gombok</li>
             <li>• Mobile-friendly design</li>

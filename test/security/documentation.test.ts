@@ -17,7 +17,7 @@ describe('Security: Documentation Verification', () => {
 
   describe('Core Security Documentation', () => {
     it('should have main security fix report', () => {
-      const reportPath = path.join(projectRoot, 'SECURITY_FIX_REPORT.md');
+      const reportPath = path.join(projectRoot, 'docs/archive/SECURITY_FIX_REPORT.md');
       expect(fs.existsSync(reportPath)).toBe(true);
 
       const content = fs.readFileSync(reportPath, 'utf-8');
@@ -29,7 +29,7 @@ describe('Security: Documentation Verification', () => {
     });
 
     it('should have git audit documentation', () => {
-      const auditPath = path.join(projectRoot, 'GIT_AUDIT_REPORT.md');
+      const auditPath = path.join(projectRoot, 'docs/archive/GIT_AUDIT_REPORT.md');
       expect(fs.existsSync(auditPath)).toBe(true);
 
       const content = fs.readFileSync(auditPath, 'utf-8');
@@ -38,7 +38,7 @@ describe('Security: Documentation Verification', () => {
     });
 
     it('should have rate limiting audit report', () => {
-      const rateLimitPath = path.join(projectRoot, 'RATE_LIMITING_AUDIT.md');
+      const rateLimitPath = path.join(projectRoot, 'docs/archive/RATE_LIMITING_AUDIT.md');
       expect(fs.existsSync(rateLimitPath)).toBe(true);
 
       const content = fs.readFileSync(rateLimitPath, 'utf-8');
@@ -47,7 +47,7 @@ describe('Security: Documentation Verification', () => {
     });
 
     it('should have Zod validation implementation documentation', () => {
-      const zodPath = path.join(projectRoot, 'ZOD_VALIDATION_IMPLEMENTATION.md');
+      const zodPath = path.join(projectRoot, 'docs/archive/ZOD_VALIDATION_IMPLEMENTATION.md');
       expect(fs.existsSync(zodPath)).toBe(true);
 
       const content = fs.readFileSync(zodPath, 'utf-8');
@@ -151,7 +151,7 @@ describe('Security: Documentation Verification', () => {
 
   describe('Security Documentation Content Quality', () => {
     it('should have comprehensive security fix report with all sections', () => {
-      const reportPath = path.join(projectRoot, 'SECURITY_FIX_REPORT.md');
+      const reportPath = path.join(projectRoot, 'docs/archive/SECURITY_FIX_REPORT.md');
       const content = fs.readFileSync(reportPath, 'utf-8');
 
       // Check for key sections (both English and Hungarian)
@@ -167,7 +167,7 @@ describe('Security: Documentation Verification', () => {
     });
 
     it('should have git audit report with verification commands', () => {
-      const auditPath = path.join(projectRoot, 'GIT_AUDIT_REPORT.md');
+      const auditPath = path.join(projectRoot, 'docs/archive/GIT_AUDIT_REPORT.md');
       const content = fs.readFileSync(auditPath, 'utf-8');
 
       expect(content).toContain('git log');
@@ -176,7 +176,7 @@ describe('Security: Documentation Verification', () => {
     });
 
     it('should have rate limiting documentation with endpoint details', () => {
-      const rateLimitPath = path.join(projectRoot, 'RATE_LIMITING_AUDIT.md');
+      const rateLimitPath = path.join(projectRoot, 'docs/archive/RATE_LIMITING_AUDIT.md');
       const content = fs.readFileSync(rateLimitPath, 'utf-8');
 
       expect(content).toContain('/api/auth/request-code');
@@ -185,7 +185,7 @@ describe('Security: Documentation Verification', () => {
     });
 
     it('should have Zod documentation with examples', () => {
-      const zodPath = path.join(projectRoot, 'ZOD_VALIDATION_IMPLEMENTATION.md');
+      const zodPath = path.join(projectRoot, 'docs/archive/ZOD_VALIDATION_IMPLEMENTATION.md');
       const content = fs.readFileSync(zodPath, 'utf-8');
 
       const hasSchema = content.toLowerCase().includes('schema');
@@ -268,7 +268,7 @@ describe('Security: Documentation Verification', () => {
       ];
 
       requiredDocs.forEach((doc) => {
-        const docPath = path.join(projectRoot, doc);
+        const docPath = path.join(projectRoot, 'docs/archive', doc);
         expect(fs.existsSync(docPath)).toBe(true);
       });
     });
@@ -292,7 +292,7 @@ describe('Security: Documentation Verification', () => {
 
   describe('Commit History Verification', () => {
     it('should have security fix commits documented', () => {
-      const reportPath = path.join(projectRoot, 'SECURITY_FIX_REPORT.md');
+      const reportPath = path.join(projectRoot, 'docs/archive/SECURITY_FIX_REPORT.md');
       const content = fs.readFileSync(reportPath, 'utf-8');
 
       // Check for commit references

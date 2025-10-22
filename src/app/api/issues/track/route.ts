@@ -112,9 +112,9 @@ export async function POST(request: NextRequest) {
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: 'Validációs hiba',
-          details: error.errors.map(err => ({
+          details: error.issues.map(err => ({
             field: err.path.join('.'),
             message: err.message
           }))

@@ -1,0 +1,93 @@
+{
+  "title": "Közlekedési Ismeretek Teszt",
+  "description": "Teszteld a közlekedési szabályokkal kapcsolatos tudásodat ebben a rövid kvízben!",
+  "category": "Közlekedés",
+  "difficulty": "MEDIUM",
+  "timeLimit": 10,
+  "maxAttempts": 3,
+  "isPublic": true,
+  "showResults": true,
+  "status": "PUBLISHED",
+  "questions": [
+    {
+      "question": "Mi a maximális sebesség belterületen?",
+      "questionType": "MULTIPLE_CHOICE",
+      "explanation": "A KRESZ szerint belterületen 50 km/h a megengedett maximális sebesség.",
+      "points": 1,
+      "required": true,
+      "sortOrder": 0,
+      "options": [
+        {
+          "optionText": "40 km/h",
+          "isCorrect": false,
+          "sortOrder": 0
+        },
+        {
+          "optionText": "50 km/h",
+          "isCorrect": true,
+          "sortOrder": 1
+        },
+        {
+          "optionText": "60 km/h",
+          "isCorrect": false,
+          "sortOrder": 2
+        },
+        {
+          "optionText": "70 km/h",
+          "isCorrect": false,
+          "sortOrder": 3
+        }
+      ]
+    },
+    {
+      "question": "Kötelező-e a biztonsági öv használata hátsó ülésen is?",
+      "questionType": "TRUE_FALSE",
+      "explanation": "Igen, a biztonsági öv használata mind elöl, mind hátul kötelező.",
+      "points": 1,
+      "required": true,
+      "sortOrder": 1,
+      "options": [
+        {
+          "optionText": "Igen",
+          "isCorrect": true,
+          "sortOrder": 0
+        },
+        {
+          "optionText": "Nem",
+          "isCorrect": false,
+          "sortOrder": 1
+        }
+      ]
+    },
+    {
+      "question": "Hány éves kortól vezethető gépjármű B kategóriás jogosítvánnyal?",
+      "questionType": "MULTIPLE_CHOICE",
+      "explanation": "B kategóriás jogosítvány 18 éves kortól szerezhető meg és használható.",
+      "points": 1,
+      "required": true,
+      "sortOrder": 2,
+      "options": [
+        {
+          "optionText": "16 éves kortól",
+          "isCorrect": false,
+          "sortOrder": 0
+        },
+        {
+          "optionText": "17 éves kortól",
+          "isCorrect": false,
+          "sortOrder": 1
+        },
+        {
+          "optionText": "18 éves kortól",
+          "isCorrect": true,
+          "sortOrder": 2
+        },
+        {
+          "optionText": "21 éves kortól",
+          "isCorrect": false,
+          "sortOrder": 3
+        }
+      ]
+    }
+  ]
+}

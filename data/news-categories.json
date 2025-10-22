@@ -1,0 +1,39 @@
+{
+  "categories": [
+    {
+      "name": "Közlekedés",
+      "description": "Közlekedési hírek és fejlesztések",
+      "color": "#3b82f6",
+      "isActive": true,
+      "sortOrder": 1
+    },
+    {
+      "name": "Oktatás",
+      "description": "Oktatással kapcsolatos hírek",
+      "color": "#10b981",
+      "isActive": true,
+      "sortOrder": 2
+    },
+    {
+      "name": "Egészségügy",
+      "description": "Egészségügyi témák",
+      "color": "#ef4444",
+      "isActive": true,
+      "sortOrder": 3
+    },
+    {
+      "name": "Környezetvédelem",
+      "description": "Környezetvédelmi programok és hírek",
+      "color": "#22c55e",
+      "isActive": true,
+      "sortOrder": 4
+    },
+    {
+      "name": "Gazdaság",
+      "description": "Gazdasági hírek és elemzések",
+      "color": "#f59e0b",
+      "isActive": true,
+      "sortOrder": 5
+    }
+  ]
+}

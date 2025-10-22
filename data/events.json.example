@@ -1,0 +1,24 @@
+{
+  "events": [
+    {
+      "title": "Közösségi Takarítás - Dunakorzó",
+      "description": "Takarítsuk ki közösen a Dunakorzót! Mindenkit szeretettel várunk, aki részt szeretne venni környezetünk szebbé tételében.",
+      "location": "Dunakorzó, Budapest",
+      "startDate": "2025-11-10T10:00:00Z",
+      "endDate": "2025-11-10T14:00:00Z",
+      "status": "UPCOMING",
+      "maxAttendees": 50,
+      "imageUrl": "/uploads/events/cleanup.jpg"
+    },
+    {
+      "title": "Lakossági Fórum - Közlekedési Fejlesztések",
+      "description": "Beszéljük meg közösen a város közlekedési fejlesztési terveit! Kérdések, javaslatok várhatók.",
+      "location": "Városháza, Nagyterem",
+      "startDate": "2025-11-15T18:00:00Z",
+      "endDate": "2025-11-15T20:00:00Z",
+      "status": "UPCOMING",
+      "maxAttendees": 100,
+      "imageUrl": "/uploads/events/forum.jpg"
+    }
+  ]
+}

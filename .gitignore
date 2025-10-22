@@ -8,10 +8,21 @@
 
 # testing
 /coverage
+/coverage-*/
+coverage-*/
 /test/reports/*.html
 /test/reports/*.log
 /test/reports/*.json
 *.lcov
+
+# test and build logs
+*.log
+!**/logs/.gitkeep
+test_*.log
+functional_test_*.log
+coverage_*.log
+build*.log
+oauth*.log
 
 # next.js
 /.next/

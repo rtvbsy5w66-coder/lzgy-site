@@ -1,0 +1,39 @@
+{
+  "polls": [
+    {
+      "title": "Melyik közlekedési projektet támogatnád elsőként?",
+      "description": "Szavazz a legfontosabb közlekedési fejlesztésre, amely szerinted prioritást élvezne!",
+      "status": "ACTIVE",
+      "participationType": "ANONYMOUS",
+      "category": "Közlekedés",
+      "startDate": "2025-10-22T00:00:00Z",
+      "endDate": "2025-11-30T23:59:59Z",
+      "isPublic": true,
+      "allowAnonymous": true,
+      "showResults": "AFTER_VOTING",
+      "showLiveCount": true,
+      "options": [
+        {
+          "text": "Kerékpárút hálózat bővítése",
+          "description": "Új kerékpárutak építése a város különböző részein",
+          "sortOrder": 0
+        },
+        {
+          "text": "Tömegközlekedés fejlesztése",
+          "description": "Buszok és villamosok modernizálása, új járatok indítása",
+          "sortOrder": 1
+        },
+        {
+          "text": "Parkolóhelyek bővítése",
+          "description": "Új parkolóházak és felszíni parkolók építése",
+          "sortOrder": 2
+        },
+        {
+          "text": "Gyalogos zónák kialakítása",
+          "description": "Autómentes övezetek létrehozása a belvárosban",
+          "sortOrder": 3
+        }
+      ]
+    }
+  ]
+}

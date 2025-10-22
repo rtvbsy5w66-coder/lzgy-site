@@ -18,7 +18,7 @@ const issueSubmissionSchema = z.object({
   description: z.string().min(10, 'Részletes leírás kötelező (minimum 10 karakter)'),
   location: z.string().optional(),
   urgency: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
-  customFields: z.record(z.any()).optional(),
+  customFields: z.record(z.string(), z.any()).optional(),
   isPublic: z.boolean().default(true),
 });
 
@@ -166,9 +166,9 @@ export async function POST(request: NextRequest) {
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: 'Validációs hiba',
-          details: error.errors.map(err => ({
+          details: error.issues.map(err => ({
             field: err.path.join('.'),
             message: err.message
           }))

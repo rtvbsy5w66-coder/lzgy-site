@@ -1,0 +1,23 @@
+{
+  "posts": [
+    {
+      "title": "Példa Blogbejegyzés - Közlekedési Fejlesztés",
+      "slug": "pelda-blogbejegyzes-kozlekedesi-fejlesztes",
+      "content": "<h2>Új közlekedési projekt indult</h2><p>A város vezetése döntött egy új kerékpárút hálózat kiépítéséről, amely jelentősen javítja majd a közlekedés biztonságát és környezetbarát alternatívát kínál.</p><p>A projekt főbb elemei:</p><ul><li>15 km új kerékpárút</li><li>Okos lámpák telepítése</li><li>Kerékpár kölcsönző állomások</li></ul>",
+      "excerpt": "Új kerékpárút hálózat épül a városban, amely környezetbarát közlekedési alternatívát kínál.",
+      "status": "PUBLISHED",
+      "categoryName": "Közlekedés",
+      "imageUrl": "/uploads/posts/bike-lane.jpg",
+      "createdAt": "2025-10-15T10:00:00Z"
+    },
+    {
+      "title": "Oktatási Reform Tervezet",
+      "slug": "oktatasi-reform-tervezet",
+      "content": "<p>Bemutatjuk az oktatási reform tervezetét, amely modern, gyakorlatorientált oktatást helyez előtérbe.</p>",
+      "excerpt": "Modern oktatási reform tervezet került előterjesztésre.",
+      "status": "DRAFT",
+      "categoryName": "Oktatás",
+      "createdAt": "2025-10-20T14:00:00Z"
+    }
+  ]
+}

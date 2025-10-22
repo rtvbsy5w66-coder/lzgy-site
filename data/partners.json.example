@@ -1,0 +1,28 @@
+{
+  "partners": [
+    {
+      "name": "Greenpeace Magyarország",
+      "description": "Nemzetközi környezetvédelmi szervezet magyar képviselete",
+      "logoUrl": "/uploads/partners/greenpeace-logo.png",
+      "websiteUrl": "https://www.greenpeace.org/hungary/",
+      "isActive": true,
+      "sortOrder": 1
+    },
+    {
+      "name": "Magyar Kerékpárosklub",
+      "description": "Kerékpáros érdekképviseleti szervezet",
+      "logoUrl": "/uploads/partners/bike-club-logo.png",
+      "websiteUrl": "https://www.kerekparosklub.hu/",
+      "isActive": true,
+      "sortOrder": 2
+    },
+    {
+      "name": "Levegő Munkacsoport",
+      "description": "Környezet- és természetvédelmi szervezet",
+      "logoUrl": "/uploads/partners/levego-logo.png",
+      "websiteUrl": "https://www.levego.hu/",
+      "isActive": true,
+      "sortOrder": 3
+    }
+  ]
+}
