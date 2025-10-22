@@ -64,11 +64,11 @@ export const SECURITY_CONFIGS = {
   
   PETITION_SIGN: {
     rateLimit: 'PETITION_SIGN' as const,
-    requireCSRF: false // Temporarily disabled until frontend implements CSRF
+    requireCSRF: true // ✅ CSRF protection ENABLED
   },
-  
+
   LOGIN: {
     rateLimit: 'LOGIN' as const,
-    requireCSRF: false // Temporarily disabled until frontend implements CSRF
+    requireCSRF: true // ✅ CSRF protection ENABLED
   }
 } satisfies Record<string, SecurityConfig>;
